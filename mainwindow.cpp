@@ -195,7 +195,30 @@ bool MainWindow::saveAs()
     return saveFile(qEditor->getCurrentFileAttr("id").toInt(), fileName);
 }
 
-void MainWindow::exit()
+void MainWindow::undo()
+{
+
+}
+
+void MainWindow::redo()
+{
+
+}
+
+
+void MainWindow::cut()
+{
+
+}
+
+
+void MainWindow::copy()
+{
+
+}
+
+
+void MainWindow::paste()
 {
 
 }

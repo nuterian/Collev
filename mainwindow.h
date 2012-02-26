@@ -26,11 +26,12 @@ private slots:
     void openFile();
     bool save();
     bool saveAs();
-    void exit();
 
     void undo();
     void redo();
-    void cut(;)
+    void cut();
+    void copy();
+    void paste();
 
 private:
     void createActions();
