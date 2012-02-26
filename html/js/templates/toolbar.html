@@ -1,0 +1,31 @@
+<div id="solutionTitle" class="column title">
+<%- name %>
+</div>
+<div id="solutionProgress" class="column drop-list-container">
+	<ul class="drop-list">
+		<% 	conditions = challenge.winning_conditions;
+			var done = 0;
+			for(i in conditions){
+		%>
+			<li class="clearfix">
+				<span class="column condition-status">
+					<% 	if(conditions[i].status == false){ 	%>
+						✖
+					<%	}else{ 	done++;	%>
+						O
+					<%	} 	%>
+				</span>
+				<span class="column last condition-desc"><%= conditions[i].desc %></span>
+			</li>
+
+		<% 	} 	
+			var per = (done/conditions.length)*100;
+			var colorClass = '';
+			if(per<40){colorClass='low'}
+			if(per == 0){per = 10}
+		%>
+	</ul>
+	<div class="progress-container">
+		<div class="progress <%= colorClass %>" style="width:<%= per %>%"></div>
+	</div>
+</div>

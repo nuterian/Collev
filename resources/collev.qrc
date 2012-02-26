@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>index.html</file>
+        <file>js/lib/jquery.min.js</file>
+        <file>css/codemirror.css</file>
+        <file>css/style.css</file>
+        <file>js/collev.js</file>
+        <file>js/codemirror/codemirror.js</file>
+        <file>js/codemirror/mode/javascript/javascript.js</file>
+    </qresource>
+</RCC>
