@@ -88,8 +88,10 @@ void Editor::sendMsgJS(QString msg)
 
 void Editor::setFileModified()
 {
-    setCurrentFileAttr("modified", true);
-    emit fileModified();
+    if(getCurrentFileAttr("modified").toBool() == false){
+        setCurrentFileAttr("modified", true);
+        emit fileModified();
+    }
 }
 
 void Editor::saveFileContents(int index, QString content)

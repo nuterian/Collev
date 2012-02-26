@@ -72,7 +72,7 @@ void MainWindow::createActions()
     connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
 
     redoAction = new QAction(tr("&Redo"),this);
-    redoAction->setShortcut(QKeySequence::Undo);
+    redoAction->setShortcut(QKeySequence::Redo);
     redoAction->setStatusTip(tr("Redo last action."));
     connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 
@@ -101,6 +101,8 @@ void MainWindow::createActions()
 
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAsAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasUndo(bool)), undoAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasRedo(bool)), redoAction, SLOT(setEnabled(bool)));
 }
 
 void MainWindow::createMenus()
@@ -197,12 +199,12 @@ bool MainWindow::saveAs()
 
 void MainWindow::undo()
 {
-
+    frame->evaluateJavaScript("editor.undo()");
 }
 
 void MainWindow::redo()
 {
-
+    frame->evaluateJavaScript("editor.redo()");
 }
 
 

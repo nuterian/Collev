@@ -62,7 +62,20 @@ $(function(){
 		file.code = CodeMirror(editorCode, {
 	          value: qFile.content,
 	          lineNumbers: true,
-	          onChange: qEditor.setFileModified
+	          onChange: function(){
+	          	his = file.code.historySize();
+	          	if(his['undo'] == 1)
+	          		qEditor.hasUndo(true);
+	          	else if(his['undo'] == 0)
+	          		qEditor.hasUndo(false);
+
+	          	if(his['redo'] == 1)
+	          		qEditor.hasRedo(true);
+	          	else if(his['redo'] == 0)
+	          		qEditor.hasRedo(false);
+
+	          	qEditor.setFileModified();
+	          }
 	        });
 	    $(file.code.getScrollerElement()).height('100%');
         $(file.code.getScrollerElement()).width('100%');
@@ -92,6 +105,14 @@ $(function(){
 
 	editor.updateTitle = function(index, title){
 		openFiles[index].tab.find('.tab-title').html(title);
+	}
+
+	editor.undo = function(){
+		currFile.code.undo();
+	}
+
+	editor.redo = function(){
+		currFile.code.redo();
 	}
 
 	qEditor.fileOpened.connect(editor.openFile);

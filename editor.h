@@ -35,6 +35,8 @@ private:
 
 signals:
     bool hasOpenFile(bool);
+    bool hasUndo(bool);
+    bool hasRedo(bool);
 
     void fileOpened(QVariantMap file);
     void fileSave(int index);
