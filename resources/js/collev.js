@@ -55,7 +55,7 @@ $(function(){
 	editor.openFile = function(qFile){
 		console.log('Opening File - '+qFile.name);
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><div class="tab-title left">'+qFile.name+'</div><div class="tab-action right">');	
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
 		file.tab.attr('data-id', qFile.id);
 		$editorTabs.append(file.tab);
 

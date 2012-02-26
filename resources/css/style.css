@@ -125,7 +125,7 @@ position:relative;
 	border-radius: 4px 4px 0 0;
 	cursor: default;
 	overflow:hidden;
-	text-overflow: ellipsis;
+	clear:both;
 }
 
 #editorTabs li.current{
@@ -145,8 +145,19 @@ position:relative;
 }
 
 #editorTabs li .tab-title{
-	width:80%;
+	min-width:0%;
+	max-width:80%;
 	overflow:hidden;
+	text-overflow: ellipsis;
+	float:left;
+}
+
+#editorTabs li .tab-action{
+	min-width:20%;
+	max-width:100%;
+	margin-right:-4px;	
+	overflow:hidden;
+	float:right;
 }
 
 #editorCode{
@@ -188,6 +199,17 @@ margin: 0;
 padding: 0;	
 overflow:hidden;
 overflow-y:hidden;
+}
+
+.ico-close{
+width:14px;height:13px;
+background:url("../img/close.png") -0px -0px no-repeat;
+display: block;vertical-align: top;overflow: hidden;
+margin-top:2px;	
+}
+
+.ico-close:hover{
+background:url("../img/close_over.png") -0px -0px no-repeat;	
 }
 
 

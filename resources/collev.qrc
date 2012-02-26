@@ -7,5 +7,7 @@
         <file>js/collev.js</file>
         <file>js/codemirror/codemirror.js</file>
         <file>js/codemirror/mode/javascript/javascript.js</file>
+        <file>img/close.png</file>
+        <file>img/close_over.png</file>
     </qresource>
 </RCC>
