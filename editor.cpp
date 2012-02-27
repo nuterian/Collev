@@ -47,9 +47,22 @@ void Editor::newFile()
     if(openFiles.size() == 1) emit hasOpenFile(true);
 }
 
+void Editor::closeFile(int index)
+{
+    QVariantMap *filemap = openFiles.takeAt(index);
+    tabOrder.removeOne(filemap);
+    changeCurrent(openFiles.indexOf(tabOrder.first()));
+    delete filemap;
+}
+
 void Editor::changeCurrent(int index)
 {
     currentOpenFile = openFiles.at(index);
+    int tabIndex = tabOrder.indexOf(currentOpenFile);
+    if( tabIndex != 0){
+        tabOrder.removeAt(tabIndex);
+        tabOrder.push_front(currentOpenFile);
+    }
     emit currentChanged(index);
 }
 
@@ -78,7 +91,7 @@ void Editor::setFileAttr(int index, const QString &key, const QVariant &value)
 
 void Editor::setCurrentFileAttr(const QString &key, const QVariant &value)
 {
-    setFileAttr((*currentOpenFile)["id"].toInt(), key, value);
+    setFileAttr(openFiles.indexOf(currentOpenFile), key, value);
 }
 
 void Editor::sendMsgJS(QString msg)

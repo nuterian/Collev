@@ -1,5 +1,12 @@
 var editor = new Object();
 
+// Array Remove - By John Resig
+Array.prototype.remove = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};
+
 $(function(){
 	console.log('Initialized Collev');	
 
@@ -55,17 +62,22 @@ $(function(){
 		setTimeout(currFile.code.refresh(), 10);
 	}
 	editor.close = function(index){
+		console.log('Deleting... =>');
+		console.log(openFiles);
+
 		openFiles[index].tab.remove();
 		$(openFiles[index].code.getWrapperElement()).remove();
-		delete openFiles[index];
+		openFiles.remove(index);
+		qEditor.closeFile(index);
 		editor.updateTabs();
+		console.log('Deleted! =>');
+		console.log(openFiles);
 	}
 		
 	editor.openFile = function(qFile){
 		console.log('Opening File - '+qFile.name);
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close" onclick="editor.close('+qFile.id+')"></span></span></div></li>');	
-		file.tab.attr('data-id', qFile.id);
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
 		$editorTabs.append(file.tab);
 
 		file.code = CodeMirror(editorCode, {
@@ -103,9 +115,17 @@ $(function(){
 		qEditor.saveFileContents(index, openFiles[index].code.getValue());
 	}
 
-	$("#tabContainer > li").live('click',function(){
-		qEditor.changeCurrent(parseInt($(this).attr('data-id')));
+	$("#tabContainer > li").live('click', function(){
+		qEditor.changeCurrent($(this).index());
 	});
+
+	$("#tabContainer > li").find('span.ico-close').live('click', function(){
+		var index = $(this).parent().parent().parent().index();
+		console.log('Closing at index: '+ index);
+		editor.close(index);
+		return false;
+	});
+
 
 	$(window).resize(function(){
 		console.log('resizing');

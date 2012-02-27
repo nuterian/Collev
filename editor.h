@@ -19,6 +19,7 @@ public:
     void newFile();
     void retrieveFile(int index);
     void saveFile(int index);
+    Q_INVOKABLE void closeFile(int index);
 
     Q_INVOKABLE int getFileCount();
     Q_INVOKABLE QVariant getFileAttr(int index , const QString &key);
@@ -49,6 +50,7 @@ signals:
 private:
     QVariantMap *currentOpenFile;
     QVMapList openFiles;
+    QVMapList tabOrder;
 
 };
 
