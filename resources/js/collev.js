@@ -26,14 +26,17 @@ $(function(){
 		*/
 		var per = 100/openFiles.length;
 		for(i=0; i<openFiles.length; i++){
+			/*
 			if(openFiles.length > 1 && i == openFiles.length-1){
 				usedWidth = openFiles[i-1].tab.width()*(openFiles.length-1);
 				fullWidth = $editorTabs.width() - (editPad*2);
 				openFiles[i].tab.width((((fullWidth-usedWidth)/fullWidth)*100)+'%');
 			}
 			else{
-				openFiles[i].tab.width(per+'%');
-			}
+			*/
+				if(openFiles[i])
+					openFiles[i].tab.width(per+'%');
+			//}
 		}
 	}
 
@@ -51,11 +54,17 @@ $(function(){
 		currFile.code.focus();
 		setTimeout(currFile.code.refresh(), 10);
 	}
+	editor.close = function(index){
+		openFiles[index].tab.remove();
+		$(openFiles[index].code.getWrapperElement()).remove();
+		delete openFiles[index];
+		editor.updateTabs();
+	}
 		
 	editor.openFile = function(qFile){
 		console.log('Opening File - '+qFile.name);
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close" onclick="editor.close('+qFile.id+')"></span></span></div></li>');	
 		file.tab.attr('data-id', qFile.id);
 		$editorTabs.append(file.tab);
 
