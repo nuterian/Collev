@@ -121,8 +121,7 @@ $(function(){
 
 	$("#tabContainer > li").find('span.ico-close').live('click', function(){
 		var index = $(this).parent().parent().parent().index();
-		console.log('Closing at index: '+ index);
-		editor.close(index);
+		qEditor.fileClose(index);
 		return false;
 	});
 

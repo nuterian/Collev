@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(frame, SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(attachObjects()));
     connect(qEditor, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentFile(int)));
     connect(qEditor, SIGNAL(fileModified()), this, SLOT(fileWasModified()));
+    connect(qEditor, SIGNAL(fileClose(int)), this, SLOT(closeFile(int)));
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), this, SLOT(setEmpty(bool)));
 
     loadFile("qrc:/index.html");
     setCentralWidget(view);
@@ -61,6 +63,15 @@ void MainWindow::createActions()
     saveAsAction->setStatusTip(tr("Save file with different name."));
     connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
 
+    closeFileAction = new QAction(tr("&Close File"),this);
+    closeFileAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
+    closeFileAction->setStatusTip(tr("Close current open file."));
+    connect(closeFileAction, SIGNAL(triggered()), this, SLOT(closeFile()));
+
+    closeAllFilesAction = new QAction(tr("Close All Files"),this);
+    closeAllFilesAction->setStatusTip(tr("Close all open files."));
+    connect(closeAllFilesAction, SIGNAL(triggered()), this, SLOT(closeAllFiles()));
+
     exitAction = new QAction(tr("E&xit"),this);
     exitAction->setShortcut(QKeySequence::Quit);
     exitAction->setStatusTip(tr("Exit to Windows."));
@@ -103,6 +114,8 @@ void MainWindow::createActions()
 
     saveAction->setEnabled(false);
     saveAsAction->setEnabled(false);
+    closeFileAction->setEnabled(false);
+    closeAllFilesAction->setEnabled(false);
     undoAction->setEnabled(false);
     redoAction->setEnabled(false);
     /*
@@ -115,6 +128,8 @@ void MainWindow::createActions()
 
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAsAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), closeFileAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), closeAllFilesAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), nextFileStackAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), prevFileStackAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasUndo(bool)), undoAction, SLOT(setEnabled(bool)));
@@ -128,6 +143,9 @@ void MainWindow::createMenus()
     fileMenu->addAction(openFileAction);
     fileMenu->addAction(saveAction);
     fileMenu->addAction(saveAsAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(closeFileAction);
+    fileMenu->addAction(closeAllFilesAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
@@ -220,6 +238,54 @@ bool MainWindow::saveAs()
     return saveFile(qEditor->getCurrentFileAttr("id").toInt(), fileName);
 }
 
+bool MainWindow::closeFile()
+{
+    if(qEditor->getCurrentFileAttr("modified").toBool())
+    {
+        QMessageBox msgBox;
+        QString fileName = qEditor->getCurrentFileAttr("name").toString();
+        if(qEditor->getCurrentFileAttr("new").toBool())
+            fileName = "New File";
+        msgBox.setText(tr("%1 has been modified.").arg(fileName));
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        switch (ret) {
+          case QMessageBox::Save:
+              if(!save())return false;
+              break;
+          case QMessageBox::Discard:
+              break;
+          case QMessageBox::Cancel:
+              return false;
+              break;
+          default:
+              return false;
+              break;
+        }
+    }
+    frame->evaluateJavaScript(tr("editor.close(%1)").arg(qEditor->getCurrentFileIndex()));
+    return true;
+}
+
+bool MainWindow::closeFile(int index)
+{
+    qEditor->changeCurrent(index);
+    return closeFile();
+}
+
+void MainWindow::closeAllFiles()
+{
+    int index = qEditor->getCurrentFileIndex();
+    while(1){
+        if(!closeFile(index)) break;
+        if(!qEditor->hasOpenFile()) break;
+        index = qEditor->cycleNextFile();
+    }
+}
+
 void MainWindow::undo()
 {
     frame->evaluateJavaScript("editor.undo()");
@@ -256,6 +322,14 @@ void MainWindow::nextFile()
 void MainWindow::prevFile()
 {
     qEditor->cyclePrevFile();
+}
+
+void MainWindow::setEmpty(bool status)
+{
+    if(status == false){
+        this->setWindowTitle(tr("Collev"));
+        setWindowModified(false);
+    }
 }
 
 void MainWindow::updateCurrentFile(int index)

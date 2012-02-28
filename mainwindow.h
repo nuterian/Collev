@@ -26,6 +26,9 @@ private slots:
     void openFile();
     bool save();
     bool saveAs();
+    bool closeFile();
+    bool closeFile(int index);
+    void closeAllFiles();
 
     void undo();
     void redo();
@@ -35,6 +38,8 @@ private slots:
 
     void nextFile();
     void prevFile();
+
+    void setEmpty(bool);
 
 private:
     void createActions();
@@ -55,6 +60,8 @@ private:
     QAction *openFileAction;
     QAction *saveAction;
     QAction *saveAsAction;
+    QAction *closeFileAction;
+    QAction *closeAllFilesAction;
     QAction *exitAction;
 
     QMenu *editMenu;

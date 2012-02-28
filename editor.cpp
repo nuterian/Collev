@@ -47,30 +47,47 @@ void Editor::newFile()
     if(openFiles.size() == 1) emit hasOpenFile(true);
 }
 
-void Editor::closeFile(int index)
+void Editor::closeFile(QVariantMap *filemap)
 {
-    QVariantMap *filemap = openFiles.takeAt(index);
+    if(filemap == NULL) filemap = currentOpenFile;
     tabOrder.removeOne(filemap);
-    changeCurrent(openFiles.indexOf(tabOrder.first()));
     delete filemap;
-    if(openFiles.size() == 0) emit hasOpenFile(false);
+    if(openFiles.size() == 0)
+        emit hasOpenFile(false);
+    else
+        changeCurrent(openFiles.indexOf(tabOrder.first()));
 }
 
-void Editor::cycleNextFile()
+void Editor::closeFile(int index)
+{
+    closeFile(openFiles.takeAt(index));
+}
+
+int Editor::cycleNextFile()
 {
     ++currentTab;
     if(currentTab == tabOrder.end())
         currentTab = tabOrder.begin();
-    changeCurrent(*currentTab);
+    int index = openFiles.indexOf(*currentTab);
+    changeCurrent(index);
+    return index;
 }
 
-void Editor::cyclePrevFile()
+int Editor::cyclePrevFile()
 {
     if(currentTab == tabOrder.begin()){
         currentTab = tabOrder.end();
     }
     --currentTab;
-    changeCurrent(*currentTab);
+    int index = openFiles.indexOf(*currentTab);
+    changeCurrent(index);
+    return index;
+}
+
+bool Editor::hasOpenFile()
+{
+    if(openFiles.size() == 0) return false;
+    else return true;
 }
 
 void Editor::switchCurrTab()
@@ -100,7 +117,17 @@ void Editor::changeCurrent(QVariantMap *curr)
 
 void Editor::changeCurrent(int index)
 {
-    changeCurrent(openFiles.at(index));
+    currentOpenFile = openFiles.at(index);
+    if(!tabOrder.contains(currentOpenFile)){ //Newly created file
+        tabOrder.push_front(currentOpenFile);
+        currentTab = tabOrder.begin();
+    }
+    else{
+        currentTab = tabOrder.begin();
+        while(*currentTab != currentOpenFile)
+            ++currentTab;
+    }
+    emit currentChanged(index);
 }
 
 void Editor::switchCurrent(int index)
@@ -122,6 +149,11 @@ QVariant Editor::getFileAttr(int index, const QString &key)
 QVariant Editor::getCurrentFileAttr(const QString &key)
 {
     return (*currentOpenFile)[key];
+}
+
+int Editor::getCurrentFileIndex()
+{
+    return openFiles.indexOf(currentOpenFile);
 }
 
 void Editor::setFileAttr(int index, const QString &key, const QVariant &value)

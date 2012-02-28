@@ -19,23 +19,25 @@ public:
     void newFile();
     void retrieveFile(int index);
     void saveFile(int index);
+    void closeFile(QVariantMap *filemap = NULL);
     Q_INVOKABLE void closeFile(int index);
 
     Q_INVOKABLE int getFileCount();
     Q_INVOKABLE QVariant getFileAttr(int index , const QString &key);
     Q_INVOKABLE QVariant getCurrentFileAttr(const QString &key);
+    int getCurrentFileIndex();
     Q_INVOKABLE void setFileAttr(int index, const QString &key, const QVariant &value);
     Q_INVOKABLE void setCurrentFileAttr(const QString &key, const QVariant &value);
 
+    void changeCurrent(QVariantMap*);
     Q_INVOKABLE void changeCurrent(int index);
     Q_INVOKABLE void switchCurrent(int index);
-    void changeCurrent(QVariantMap*);
     Q_INVOKABLE void setFileModified();
     Q_INVOKABLE void saveFileContents(int index, QString content);
 
-    void cycleNextFile();
-    void cyclePrevFile();
-    void switchPrevFile();
+    int cycleNextFile();
+    int cyclePrevFile();
+    bool hasOpenFile();
 
 private:
     void sendMsgJS(QString msg);
@@ -51,6 +53,7 @@ signals:
     void fileSaved(int index);
     void fileTitleChanged(int index, QString title);
     void fileModified();
+    void fileClose(int index);
     void currentChanged(int index);
     void jsMsg(QString msg);
 
