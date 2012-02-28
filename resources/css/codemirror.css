@@ -64,8 +64,8 @@
   visibility: visible;
 }
 
-span.CodeMirror-selected { background: #d9d9d9; }
-.CodeMirror-focused span.CodeMirror-selected { background: #d2dcf8; }
+span.CodeMirror-selected { background: #ededed;}
+.CodeMirror-focused span.CodeMirror-selected { background: #c2e8ff;}
 
 .CodeMirror-searching {background: #ffa;}
 
