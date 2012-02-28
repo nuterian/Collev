@@ -76,6 +76,7 @@ void MainWindow::createActions()
     redoAction->setStatusTip(tr("Redo last action."));
     connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 
+    /*
     cutAction = new QAction(tr("Cu&t"),this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setStatusTip(tr("Move selected text to clipboard."));
@@ -90,17 +91,32 @@ void MainWindow::createActions()
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setStatusTip(tr("Paste text from clipboard."));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
+    */
+
+    nextFileStackAction = new QAction(tr("Next File in Stack"),this);
+    nextFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab));
+    connect(nextFileStackAction, SIGNAL(triggered()), this, SLOT(nextFile()));
+
+    prevFileStackAction = new QAction(tr("Previous File in Stack"),this);
+    prevFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Tab));
+    connect(prevFileStackAction, SIGNAL(triggered()), this, SLOT(prevFile()));
 
     saveAction->setEnabled(false);
     saveAsAction->setEnabled(false);
     undoAction->setEnabled(false);
     redoAction->setEnabled(false);
+    /*
     cutAction->setEnabled(false);
     copyAction->setEnabled(false);
     pasteAction->setEnabled(false);
+    */
+    nextFileStackAction->setEnabled(false);
+    prevFileStackAction->setEnabled(false);
 
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAsAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), nextFileStackAction, SLOT(setEnabled(bool)));
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), prevFileStackAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasUndo(bool)), undoAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasRedo(bool)), redoAction, SLOT(setEnabled(bool)));
 }
@@ -118,10 +134,17 @@ void MainWindow::createMenus()
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAction);
     editMenu->addAction(redoAction);
+    /*
     editMenu->addSeparator();
     editMenu->addAction(cutAction);
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);
+    */
+
+    gotoMenu = menuBar()->addMenu(tr("&Goto"));
+    gotoMenu->addAction(nextFileStackAction);
+    gotoMenu->addAction(prevFileStackAction);
+    //gotoMenu->addAction(matchBracketAction);
 }
 
 
@@ -223,6 +246,16 @@ void MainWindow::copy()
 void MainWindow::paste()
 {
 
+}
+
+void MainWindow::nextFile()
+{
+    qEditor->cycleNextFile();
+}
+
+void MainWindow::prevFile()
+{
+    qEditor->cyclePrevFile();
 }
 
 void MainWindow::updateCurrentFile(int index)

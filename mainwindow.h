@@ -33,6 +33,9 @@ private slots:
     void copy();
     void paste();
 
+    void nextFile();
+    void prevFile();
+
 private:
     void createActions();
     void createMenus();
@@ -61,7 +64,10 @@ private:
     QAction *copyAction;
     QAction *pasteAction;
 
-
+    QMenu *gotoMenu;
+    QAction *nextFileStackAction;
+    QAction *prevFileStackAction;
+    QAction *matchBracketAction;
 };
 
 #endif // MAINWINDOW_H

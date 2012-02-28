@@ -28,11 +28,18 @@ public:
     Q_INVOKABLE void setCurrentFileAttr(const QString &key, const QVariant &value);
 
     Q_INVOKABLE void changeCurrent(int index);
+    Q_INVOKABLE void switchCurrent(int index);
+    void changeCurrent(QVariantMap*);
     Q_INVOKABLE void setFileModified();
     Q_INVOKABLE void saveFileContents(int index, QString content);
 
+    void cycleNextFile();
+    void cyclePrevFile();
+    void switchPrevFile();
+
 private:
     void sendMsgJS(QString msg);
+    void switchCurrTab();
 
 signals:
     bool hasOpenFile(bool);
@@ -51,6 +58,7 @@ private:
     QVariantMap *currentOpenFile;
     QVMapList openFiles;
     QVMapList tabOrder;
+    QVMapList::iterator currentTab;
 
 };
 

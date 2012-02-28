@@ -9,5 +9,8 @@
         <file>js/codemirror/mode/javascript/javascript.js</file>
         <file>img/close.png</file>
         <file>img/close_over.png</file>
+        <file>js/codemirror/util/dialog.css</file>
+        <file>js/codemirror/util/dialog.js</file>
+        <file>js/codemirror/util/search.js</file>
     </qresource>
 </RCC>

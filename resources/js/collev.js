@@ -116,7 +116,7 @@ $(function(){
 	}
 
 	$("#tabContainer > li").live('click', function(){
-		qEditor.changeCurrent($(this).index());
+		qEditor.switchCurrent($(this).index());
 	});
 
 	$("#tabContainer > li").find('span.ico-close').live('click', function(){

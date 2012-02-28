@@ -53,17 +53,60 @@ void Editor::closeFile(int index)
     tabOrder.removeOne(filemap);
     changeCurrent(openFiles.indexOf(tabOrder.first()));
     delete filemap;
+    if(openFiles.size() == 0) emit hasOpenFile(false);
+}
+
+void Editor::cycleNextFile()
+{
+    ++currentTab;
+    if(currentTab == tabOrder.end())
+        currentTab = tabOrder.begin();
+    changeCurrent(*currentTab);
+}
+
+void Editor::cyclePrevFile()
+{
+    if(currentTab == tabOrder.begin()){
+        currentTab = tabOrder.end();
+    }
+    --currentTab;
+    changeCurrent(*currentTab);
+}
+
+void Editor::switchCurrTab()
+{
+    tabOrder.push_front(tabOrder.takeAt(tabOrder.indexOf(*currentTab)));
+    currentTab = tabOrder.begin();
+}
+
+void Editor::changeCurrent(QVariantMap *curr)
+{
+    currentOpenFile = curr;
+    //if(!(QApplication::keyboardModifiers() & Qt::ControlModifier)){
+        //int tabIndex = tabOrder.indexOf(currentOpenFile);
+        if(!tabOrder.contains(currentOpenFile)){ //Newly created file
+            tabOrder.push_front(currentOpenFile);
+            currentTab = tabOrder.begin();
+        }
+        else{
+            currentTab = tabOrder.begin();
+            while(*currentTab != currentOpenFile)
+                ++currentTab;
+        }
+        //currentTab = tabOrder.begin();
+    //}
+    emit currentChanged(openFiles.indexOf(currentOpenFile));
 }
 
 void Editor::changeCurrent(int index)
 {
-    currentOpenFile = openFiles.at(index);
-    int tabIndex = tabOrder.indexOf(currentOpenFile);
-    if( tabIndex != 0){
-        tabOrder.removeAt(tabIndex);
-        tabOrder.push_front(currentOpenFile);
-    }
-    emit currentChanged(index);
+    changeCurrent(openFiles.at(index));
+}
+
+void Editor::switchCurrent(int index)
+{
+    changeCurrent(openFiles.at(index));
+    switchCurrTab();
 }
 
 int Editor::getFileCount()
