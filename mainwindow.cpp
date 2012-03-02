@@ -163,6 +163,37 @@ void MainWindow::createMenus()
     gotoMenu->addAction(nextFileStackAction);
     gotoMenu->addAction(prevFileStackAction);
     //gotoMenu->addAction(matchBracketAction);
+
+    prefMenu = menuBar()->addMenu(tr("&Preferences"));
+    themeMenu = prefMenu->addMenu(tr("&Theme"));
+
+    themeActions[0] = themeMenu->addAction("Default", this, SLOT(changeTheme()));
+    themeMenu->addSeparator();
+    themeActions[1] = themeMenu->addAction("Cobalt",this, SLOT(changeTheme()));
+    themeActions[2] = themeMenu->addAction("Eclipse", this, SLOT(changeTheme()));
+    themeActions[3] = themeMenu->addAction("Elegant", this, SLOT(changeTheme()));
+    themeActions[4] = themeMenu->addAction("Monokai", this, SLOT(changeTheme()));
+    themeActions[5] = themeMenu->addAction("Neat", this, SLOT(changeTheme()));
+    themeActions[6] = themeMenu->addAction("Night", this, SLOT(changeTheme()));
+
+    for(int i=0; i<7; i++){
+        themeActions[i]->setCheckable(true);
+    }
+    themeActions[0]->setChecked(true);
+}
+
+void MainWindow::changeTheme()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if(action){
+        for(int i=0; i< 7; i++){
+            if(themeActions[i]->isChecked() && themeActions[i] != action){
+                themeActions[i]->setChecked(false);
+            }
+        }
+        action->setChecked(true);
+        frame->evaluateJavaScript(tr("editor.changeTheme('%1')").arg(action->text().toLower()));
+    }
 }
 
 
@@ -299,19 +330,19 @@ void MainWindow::redo()
 
 void MainWindow::cut()
 {
-
+    view->page()->triggerAction(QWebPage::Cut);
 }
 
 
 void MainWindow::copy()
 {
-
+    view->page()->triggerAction(QWebPage::Copy);
 }
 
 
 void MainWindow::paste()
 {
-
+    view->page()->triggerAction(QWebPage::Paste);
 }
 
 void MainWindow::nextFile()
@@ -323,6 +354,7 @@ void MainWindow::prevFile()
 {
     qEditor->cyclePrevFile();
 }
+
 
 void MainWindow::setEmpty(bool status)
 {

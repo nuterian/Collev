@@ -1,5 +1,5 @@
 .CodeMirror {
-  line-height: 1em;
+  line-height: 1.2em;
   font-family: "Consolas";
 }
 
@@ -80,7 +80,7 @@ span.CodeMirror-selected { background: #ededed;}
 .cm-s-default span.cm-variable-3 {color: #085;}
 .cm-s-default span.cm-property {color: black;}
 .cm-s-default span.cm-operator {color: black;}
-.cm-s-default span.cm-comment {color: #a50;}
+.cm-s-default span.cm-comment {color: #bbb;}
 .cm-s-default span.cm-string {color: #a11;}
 .cm-s-default span.cm-string-2 {color: #f50;}
 .cm-s-default span.cm-meta {color: #555;}

@@ -39,6 +39,8 @@ private slots:
     void nextFile();
     void prevFile();
 
+    void changeTheme();
+
     void setEmpty(bool);
 
 private:
@@ -71,10 +73,16 @@ private:
     QAction *copyAction;
     QAction *pasteAction;
 
+
     QMenu *gotoMenu;
     QAction *nextFileStackAction;
     QAction *prevFileStackAction;
     QAction *matchBracketAction;
+
+    QMenu *prefMenu;
+    QMenu *themeMenu;
+    QAction *themeActions[8];
+
 };
 
 #endif // MAINWINDOW_H

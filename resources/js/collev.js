@@ -15,6 +15,7 @@ $(function(){
 
 	var openFiles = new Array();
 	var currFile = false;
+	var currTheme = 'default';
 
 	//var per = 90/openFiles.length;
 	var editPad = 10;
@@ -59,6 +60,18 @@ $(function(){
 		$(currFile.code.getWrapperElement()).removeClass('cm-hide');
 		$(currFile.code.getWrapperElement()).addClass('cm-show');
 		currFile.code.focus();
+
+      	var his = currFile.code.historySize();
+      	if(his['undo'] > 0)
+      		qEditor.hasUndo(true);
+      	else
+      		qEditor.hasUndo(false);
+
+      	if(his['redo'] > 0)
+      		qEditor.hasRedo(true);
+      	else
+      		qEditor.hasRedo(false);
+
 		setTimeout(currFile.code.refresh(), 10);
 	}
 	editor.close = function(index){
@@ -83,6 +96,7 @@ $(function(){
 		file.code = CodeMirror(editorCode, {
 	          value: qFile.content,
 	          lineNumbers: true,
+	          theme: currTheme,
 	          onChange: function(){
 	          	his = file.code.historySize();
 	          	if(his['undo'] == 1)
@@ -141,6 +155,15 @@ $(function(){
 
 	editor.redo = function(){
 		currFile.code.redo();
+	}
+
+	editor.changeTheme = function(theme)
+	{
+		for(i=0; i<openFiles.length; i++){
+			openFiles[i].code.setOption('theme', theme);
+		}
+		currTheme = theme;
+		editorCode.className = ('cm-s-'+theme);
 	}
 
 	qEditor.fileOpened.connect(editor.openFile);

@@ -12,5 +12,16 @@
         <file>js/codemirror/util/dialog.css</file>
         <file>js/codemirror/util/dialog.js</file>
         <file>js/codemirror/util/search.js</file>
+        <file>js/codemirror/util/searchcursor.js</file>
+        <file>js/codemirror/theme/cobalt.css</file>
+        <file>js/codemirror/theme/eclipse.css</file>
+        <file>js/codemirror/theme/elegant.css</file>
+        <file>js/codemirror/theme/monokai.css</file>
+        <file>js/codemirror/theme/neat.css</file>
+        <file>js/codemirror/theme/night.css</file>
+        <file>img/ico_editor.png</file>
+        <file>img/ico_settings.png</file>
+        <file>img/ico_social.png</file>
+        <file>img/ico_tasks.png</file>
     </qresource>
 </RCC>
