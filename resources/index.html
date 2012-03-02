@@ -9,16 +9,47 @@
         <script type="text/javascript" src="js/lib/jquery.min.js"></script>
         <script type="text/javascript" src="js/codemirror/codemirror.js"></script>
         <script type="text/javascript" src="js/codemirror/util/search.js"></script>
+        <script type="text/javascript" src="js/codemirror/util/searchcursor.js"></script>
         <script type="text/javascript" src="js/codemirror/util/dialog.js"></script>
         <script type="text/javascript" src="js/codemirror/mode/javascript/javascript.js"></script>
         <script type="text/javascript" src="js/collev.js"></script>
+
+        <link rel="stylesheet" href="js/codemirror/theme/cobalt.css" />
+        <link rel="stylesheet" href="js/codemirror/theme/elegant.css" />
+        <link rel="stylesheet" href="js/codemirror/theme/eclipse.css" />
+        <link rel="stylesheet" href="js/codemirror/theme/neat.css" />
+        <link rel="stylesheet" href="js/codemirror/theme/night.css" />
+        <link rel="stylesheet" href="js/codemirror/theme/monokai.css" />
     </head>
     <body>
-    	<div id="editor">
-    		<div id="editorTabs">
-                <div id="tabContainer"></div>      
+        <div id="modeBar">
+            <div class="selected">
+                <div class="ico"><img src="img/ico_editor.png"/></div>
+                <div class="label">Editor</div>
             </div>
-    		<div id="editorCode"></div>
-    	</div>
+            <div>
+                <div class="ico"><img src="img/ico_tasks.png"/></div>
+                <div class="label">Tasks</div>
+            </div>
+            <div>
+                <div class="ico"><img src="img/ico_social.png"/></div>
+                <div class="label">Social</div>
+            </div>
+            <div>
+                <div class="ico"><img src="img/ico_settings.png"/></div>
+                <div class="label">Settings</div>
+            </div>
+        </div>
+        <div id="mainContent">
+            <div id="editor">
+                <div id="editorSidebar"></div>
+                <div id="editorCodeContainer">
+                    <div id="editorTabs">
+                        <div id="tabContainer"></div>      
+                    </div>
+                    <div id="editorCode"></div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
