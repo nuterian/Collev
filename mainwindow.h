@@ -43,11 +43,16 @@ private slots:
 
     void setEmpty(bool);
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
     void createActions();
     void createMenus();
     void loadFile(const QString &fileName);
     bool saveFile(int index, const QString &fileName);
+    bool confirmQuit();
+    void writeSettings();
 
 
 private:

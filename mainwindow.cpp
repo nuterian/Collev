@@ -10,6 +10,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     view = new QWebView(this);
 
+    QSettings settings("Nuterian", "Collev");
+    settings.beginGroup("MainWindow");
+    if(settings.contains("geometry")){
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }
+    else{
+        resize(QSize(750, 500));
+        QRect frect = frameGeometry();
+        frect.moveCenter(QDesktopWidget().availableGeometry().center());
+        move(frect.topLeft());
+    }
+    setMinimumSize(QSize(600, 400));
+    settings.endGroup();
     qEditor = new Editor(this);
     frame = view->page()->mainFrame();
     attachObjects();
@@ -41,8 +54,29 @@ void MainWindow::loadFile(const QString &fileName)
     frame->setUrl(QUrl(fileName));
 }
 
+void MainWindow::writeSettings()
+{
+    QSettings settings("Nuterian", "Collev");
+    settings.beginGroup("MainWindow");
+    settings.setValue("geometry", saveGeometry());
+    settings.endGroup();
+}
+bool MainWindow::confirmQuit()
+{
+    return true;
+}
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (confirmQuit()) {
+        writeSettings();
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
 void MainWindow::createActions()
 {
+    QSettings settings("Nuterian", "Collev");
     newFileAction = new QAction(tr("&New"),this);
     newFileAction->setShortcut(QKeySequence::New);
     newFileAction->setStatusTip(tr("Create a new file."));
@@ -87,7 +121,6 @@ void MainWindow::createActions()
     redoAction->setStatusTip(tr("Redo last action."));
     connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 
-    /*
     cutAction = new QAction(tr("Cu&t"),this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setStatusTip(tr("Move selected text to clipboard."));
@@ -102,7 +135,6 @@ void MainWindow::createActions()
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setStatusTip(tr("Paste text from clipboard."));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
-    */
 
     nextFileStackAction = new QAction(tr("Next File in Stack"),this);
     nextFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab));
@@ -118,11 +150,11 @@ void MainWindow::createActions()
     closeAllFilesAction->setEnabled(false);
     undoAction->setEnabled(false);
     redoAction->setEnabled(false);
-    /*
+
     cutAction->setEnabled(false);
     copyAction->setEnabled(false);
     pasteAction->setEnabled(false);
-    */
+
     nextFileStackAction->setEnabled(false);
     prevFileStackAction->setEnabled(false);
 
@@ -152,12 +184,11 @@ void MainWindow::createMenus()
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAction);
     editMenu->addAction(redoAction);
-    /*
+
     editMenu->addSeparator();
     editMenu->addAction(cutAction);
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);
-    */
 
     gotoMenu = menuBar()->addMenu(tr("&Goto"));
     gotoMenu->addAction(nextFileStackAction);
