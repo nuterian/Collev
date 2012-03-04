@@ -2,3 +2,6 @@
 /%SystemDrive%
 /debug
 /release
+/Makefile.Release
+/Makefile
+/Makefile.Debug
