@@ -41,9 +41,14 @@ public:
     int cyclePrevFile();
     bool hasOpenFile();
 
+    QVariantMap* getDefaultFileType();
+    QVariantMap* getFileTypeByName(QString& fileName);
+    QVariantMap* getFileTypeByExt(QString ext);
+    QVMapList getFileTypes();
 private:
     void sendMsgJS(QString msg);
     void switchCurrTab();
+    void loadFileTypes();
 
 signals:
     bool hasOpenFile(bool);
@@ -53,7 +58,8 @@ signals:
     void fileOpened(QVariantMap file);
     void fileSave(int index);
     void fileSaved(int index);
-    void fileTitleChanged(int index, QString title);
+    void fileTitleChanged(int index, QVariantMap file);
+    void fileTypeChanged(int index, QVariantMap type);
     void fileModified();
     void fileClose(int index);
     void currentChanged(int index);
@@ -65,6 +71,8 @@ private:
     QVMapList tabOrder;
     QVMapList::iterator currentTab;
 
+    QVMapList fileTypes;
+    QVariantMap *defaultType;
     bool sidebarHidden;
 };
 

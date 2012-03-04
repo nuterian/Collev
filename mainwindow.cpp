@@ -4,6 +4,7 @@
 #include <QtGui>
 
 #include "mainwindow.h"
+#include "editor.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -222,6 +223,19 @@ void MainWindow::createMenus()
     viewMenu->addAction(toggleConsoleAction);
     viewMenu->addSeparator();
     viewMenu->addAction(toggleFullScreenAction);
+    viewMenu->addSeparator();
+    syntaxMenu = viewMenu->addMenu(tr("&Syntax"));
+
+    QVMapList fileTypes = qEditor->getFileTypes();
+    syntaxActions.resize(fileTypes.size());
+    for(int i=0; i<fileTypes.size(); i++){
+        syntaxActions[i] = syntaxMenu->addAction(((*fileTypes.at(i))["name"]).toString(), this, SLOT(changeSyntaxMode()));
+        syntaxActions[i]->setCheckable(true);
+        syntaxActions[i]->setData((*fileTypes.at(i))["mime"]);
+    }
+    syntaxMenu->setEnabled(false);
+    connect(qEditor, SIGNAL(hasOpenFile(bool)), syntaxMenu, SLOT(setEnabled(bool)));
+
     gotoMenu = menuBar()->addMenu(tr("&Goto"));
     gotoMenu->addAction(nextFileStackAction);
     gotoMenu->addAction(prevFileStackAction);
@@ -256,6 +270,20 @@ void MainWindow::changeTheme()
         }
         action->setChecked(true);
         frame->evaluateJavaScript(tr("editor.changeTheme('%1')").arg(action->text().toLower()));
+    }
+}
+
+void MainWindow::changeSyntaxMode()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if(action){
+        for(int i=0; i< syntaxActions.size(); i++){
+            if(syntaxActions[i]->isChecked() && syntaxActions[i] != action){
+                syntaxActions[i]->setChecked(false);
+            }
+        }
+        action->setChecked(true);
+        frame->evaluateJavaScript(tr("editor.switchCurrMode('%1','%2')").arg(action->text()).arg(action->data().toString()));
     }
 }
 

@@ -23,6 +23,7 @@ Array.prototype.remove = function(from, to) {
 $(function(){
 
 	$console = $("#console");
+
 	var $editorTabs = $("#tabContainer");
 	var editorCode = document.getElementById("editorCode");
 
@@ -104,6 +105,7 @@ $(function(){
 	          value: qFile.content,
 	          lineNumbers: true,
 	          theme: currTheme,
+	          //mode: qFile.mime,
 	          onChange: function(){
 	          	his = file.code.historySize();
 	          	if(his['undo'] == 1)
@@ -147,8 +149,17 @@ $(function(){
 	$(window).resize(function(){
 	});
 
-	editor.updateTitle = function(index, title){
-		openFiles[index].tab.find('.tab-title').html(title);
+	editor.switchCurrMode = function(name, mime){
+		currFile.code.setOption("mode", mime);
+	}
+
+	editor.changeMode = function(index, typemap){
+		openFiles[index].code.setOption("mode", typemap.mime);
+	}
+
+	editor.updateTitle = function(index, filemap){
+		openFiles[index].tab.find('.tab-title').html(filemap.name);
+		/* Add Mode changing code here */
 	}
 
 	editor.undo = function(){
@@ -187,5 +198,6 @@ $(function(){
 	qEditor.fileOpened.connect(editor.openFile);
 	qEditor.fileSave.connect(editor.saveFile);
 	qEditor.fileTitleChanged.connect(editor.updateTitle);
+	qEditor.fileTypeChanged.connect(editor.changeMode);
 	qEditor.currentChanged.connect(editor.setCurrent);
 });

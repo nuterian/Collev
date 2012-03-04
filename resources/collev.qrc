@@ -22,5 +22,6 @@
         <file>img/ico_settings.png</file>
         <file>img/ico_social.png</file>
         <file>img/ico_tasks.png</file>
+        <file>file.types</file>
     </qresource>
 </RCC>

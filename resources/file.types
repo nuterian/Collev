@@ -1,0 +1,18 @@
+CSS 		text/css			css
+C 			text/x-csrc			c h
+C++			text/x-c++src		cpp h
+HTML 		text/html			html htm xhtml shtml
+Java 		text/x-java			java bsh
+Javascript 	text/javascript		js htc
+JSON 		application/json	json
+Markdown  	text/x-markdown		mdown markdown markdn md
+Pascal		text/x-pascal		P
+Perl 		text/x-perl			pl pm pod t PL
+PHP			text/x-php			php
+Plain.Text 	text/plain 			txt
+PL/SQL 		text/x-plsql		pls
+Python		text/x-python		py rpy pyw
+Ruby		text/x-ruby			rb rbx
+SQL 		text/x-mysql		sql ddl dml
+XML 		text/xml  			xml xld xslt svg
+YAML		text/x-yaml			yaml yml

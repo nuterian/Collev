@@ -8,6 +8,65 @@ Editor::Editor(QObject *parent) : QObject(parent)
 {
     //currentOpenFile = NULL;
     sidebarHidden = false;
+    defaultType = NULL;
+    loadFileTypes();
+}
+
+void Editor::loadFileTypes()
+{
+    QFile mapFile(":/file.types");
+    QVariantMap *typeMap;
+    if (!mapFile.open(QIODevice::ReadOnly)) return;
+    while(!mapFile.atEnd()){
+        QTextStream line(mapFile.readLine());
+        QString name,mime;
+        line >> name;
+        line >> mime;
+        if(name.isEmpty()) continue;
+        name.replace('.', ' ');
+        QStringList exts;
+        while(!line.atEnd()){
+            QString ext;
+            line >> ext;
+            if(!ext.isEmpty())
+                exts << ext;
+        }
+        typeMap = new QVariantMap;
+        (*typeMap)["name"] = name;
+        (*typeMap)["mime"] = mime;
+        (*typeMap)["ext"] = exts;
+        fileTypes.append(typeMap);
+        if(mime == "text/plain")
+            defaultType = typeMap;
+    }
+}
+
+QVariantMap* Editor::getDefaultFileType()
+{
+    return defaultType;
+}
+
+QVariantMap* Editor::getFileTypeByName(QString &fileName)
+{
+    QFileInfo info(fileName);
+    return getFileTypeByExt(info.suffix());
+}
+
+QVariantMap* Editor::getFileTypeByExt(QString ext)
+{
+    QVariantMap *typeMap;
+    for(int i=0; i<fileTypes.size(); i++){
+        typeMap = fileTypes.at(i);
+        QStringList exts = ((*typeMap)["ext"]).toStringList();
+        if(exts.contains(ext))
+            return typeMap;
+    }
+    return getDefaultFileType();
+}
+
+QVMapList Editor::getFileTypes()
+{
+    return fileTypes;
 }
 
 void Editor::openFile(QFile &file)
@@ -18,6 +77,9 @@ void Editor::openFile(QFile &file)
     (*filemap)["name"] = info.fileName();
     (*filemap)["path"] = info.filePath();
     (*filemap)["type"] = info.suffix();
+    QVariantMap *typeMap = getFileTypeByExt((*filemap)["type"].toString());
+    (*filemap)["mode"] = (*typeMap)["name"];
+    (*filemap)["mime"] = (*typeMap)["mime"];
     QTextStream in(&file);
     (*filemap)["content"] = in.readAll();
     int index = openFiles.size();
@@ -37,6 +99,9 @@ void Editor::newFile()
     filemap = new QVariantMap;
     (*filemap)["name"] = "untitled";
     (*filemap)["path"] = (*filemap)["type"] = (*filemap)["content"] = "";
+    QVariantMap *typeMap = getDefaultFileType();
+    (*filemap)["mode"] = (*typeMap)["name"];
+    (*filemap)["mime"] = (*typeMap)["mime"];
     int index = openFiles.size();
     (*filemap)["id"] = index;
     (*filemap)["modified"] = false;
@@ -159,10 +224,22 @@ int Editor::getCurrentFileIndex()
 
 void Editor::setFileAttr(int index, const QString &key, const QVariant &value)
 {
-   (*openFiles.at(index))[key] = value;
+    QVariantMap *fileMap = openFiles.at(index);
 
-    if(key == "name")
-        emit fileTitleChanged(index, value.toString());
+    (*fileMap)[key] = value;
+    if(key == "name"){
+        emit fileTitleChanged(index, *fileMap);
+
+        /* Check whether the extension was changed and update mode accordingly */
+        QFileInfo info(value.toString());
+        if((*fileMap)["type"] == info.suffix()){
+            QVariantMap *typeMap = getFileTypeByExt(info.suffix());
+            (*fileMap)["type"] = info.suffix();
+            (*fileMap)["mode"] = (*typeMap)["name"];
+            (*fileMap)["mime"] = (*typeMap)["mime"];
+            emit fileTypeChanged(index, *typeMap);
+        }
+    }
 }
 
 void Editor::setCurrentFileAttr(const QString &key, const QVariant &value)

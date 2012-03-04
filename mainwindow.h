@@ -2,13 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
-#include "editor.h"
+#include <QVarLengthArray>
 
 class QAction;
 class QMenu;
 class QWebView;
 class QWebFrame;
 
+class Editor;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -46,6 +47,7 @@ private slots:
     void toggleConsole();
     void toggleFullScreen();
     void changeTheme();
+    void changeSyntaxMode();
 
     void setEmpty(bool);
 
@@ -88,6 +90,8 @@ private:
     QAction *toggleSidebarAction;
     QAction *toggleConsoleAction;
     QAction *toggleFullScreenAction;
+    QMenu *syntaxMenu;
+    QVarLengthArray<QAction*> syntaxActions;
     QMenu *indentationMenu;
 
     QMenu *gotoMenu;
