@@ -37,6 +37,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     createActions();
     createMenus();
+   // menuBar()->setStyleSheet("background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #2198c0, stop: 1 #0d5ca6)");
+    this->setStyleSheet(" QMenuBar {padding:4px 6px;border-bottom:1px solid #444;background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);}"
+                        " QMenuBar::item {spacing: 6px; padding:4px 6px;margin:2px 0;background: transparent;border-radius: 2px;}"
+                        " QMenuBar::item:selected {background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);border:1px solid #999;}"
+                        " QMenuBar::item:pressed {color:#fff;background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6e6e6e, stop:1 #4e4e4e);border-color:#222;}");
 }
 
 MainWindow::~MainWindow()
