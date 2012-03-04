@@ -6,7 +6,6 @@
         <file>css/style.css</file>
         <file>js/collev.js</file>
         <file>js/codemirror/codemirror.js</file>
-        <file>js/codemirror/mode/javascript/javascript.js</file>
         <file>img/close.png</file>
         <file>js/codemirror/util/dialog.css</file>
         <file>js/codemirror/util/dialog.js</file>
@@ -23,5 +22,19 @@
         <file>img/ico_social.png</file>
         <file>img/ico_tasks.png</file>
         <file>file.types</file>
+        <file>js/codemirror/mode/clike.js</file>
+        <file>js/codemirror/mode/css.js</file>
+        <file>js/codemirror/mode/htmlmixed.js</file>
+        <file>js/codemirror/mode/javascript.js</file>
+        <file>js/codemirror/mode/markdown.js</file>
+        <file>js/codemirror/mode/mysql.js</file>
+        <file>js/codemirror/mode/pascal.js</file>
+        <file>js/codemirror/mode/perl.js</file>
+        <file>js/codemirror/mode/php.js</file>
+        <file>js/codemirror/mode/plsql.js</file>
+        <file>js/codemirror/mode/python.js</file>
+        <file>js/codemirror/mode/ruby.js</file>
+        <file>js/codemirror/mode/xml.js</file>
+        <file>js/codemirror/mode/yaml.js</file>
     </qresource>
 </RCC>
