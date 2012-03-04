@@ -159,12 +159,15 @@ $(function(){
 		if(currFile.code.getOption("mode") != mime){
 			currFile.code.setOption("mode", mime);
 			currFile.modeName = name;
+			currFile.mimeType = mime;
 		}
 		$("#modeName", $editorStatusbar).html(currFile.modeName);
 	}
 
 	editor.changeMode = function(index, typemap){
 		openFiles[index].code.setOption("mode", typemap.mime);
+		openFiles[index].modeName = typemap.name;
+		openFiles[index].mimeType = typemap.mime;
 	}
 
 	editor.updateTitle = function(index, filemap){

@@ -299,6 +299,7 @@ void MainWindow::changeSyntaxMode()
         }
         action->setChecked(true);
         frame->evaluateJavaScript(tr("editor.switchCurrMode('%1','%2')").arg(action->text()).arg(action->data().toString()));
+        qEditor->setCurrentFileAttr("mode", action->text());
     }
 }
 
@@ -502,6 +503,16 @@ void MainWindow::setEmpty(bool status)
 
 void MainWindow::updateCurrentFile(int index)
 {
+    QString currMode = qEditor->getCurrentFileAttr("mode").toString();
+    for(int i=0; i< syntaxActions.size(); i++){
+        if(syntaxActions[i]->text() != currMode){
+            if(syntaxActions[i]->isChecked())
+                syntaxActions[i]->setChecked(false);
+        }
+        else{
+            syntaxActions[i]->setChecked(true);
+        }
+    }
     this->setWindowTitle(tr("%1[*] - Collev").arg(qEditor->getCurrentFileAttr("name").toString()));
     setWindowModified(qEditor->getCurrentFileAttr("modified").toBool());
 }

@@ -44,6 +44,7 @@ public:
     QVariantMap* getDefaultFileType();
     QVariantMap* getFileTypeByName(QString& fileName);
     QVariantMap* getFileTypeByExt(QString ext);
+    QVariantMap* getFileTypeByMode(QString mode);
     QVMapList getFileTypes();
 private:
     void sendMsgJS(QString msg);

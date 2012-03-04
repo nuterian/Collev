@@ -64,6 +64,17 @@ QVariantMap* Editor::getFileTypeByExt(QString ext)
     return getDefaultFileType();
 }
 
+QVariantMap* Editor::getFileTypeByMode(QString mode)
+{
+    QVariantMap *typeMap;
+    for(int i=0; i<fileTypes.size(); i++){
+        typeMap = fileTypes.at(i);
+        if(mode == ((*typeMap)["name"]).toString())
+            return typeMap;
+    }
+    return getDefaultFileType();
+}
+
 QVMapList Editor::getFileTypes()
 {
     return fileTypes;
@@ -239,6 +250,11 @@ void Editor::setFileAttr(int index, const QString &key, const QVariant &value)
             (*fileMap)["mime"] = (*typeMap)["mime"];
             emit fileTypeChanged(index, *typeMap);
         }
+    }
+    else if(key == "mode"){
+        QVariantMap *typeMap = getFileTypeByMode(value.toString());
+        (*fileMap)["mime"] = (*typeMap)["mime"];
+        emit fileTypeChanged(index, *typeMap);
     }
 }
 
