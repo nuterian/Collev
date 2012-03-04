@@ -17,6 +17,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void log(const QString&);
+
 private slots:
     void updateCurrentFile(int index);
     void fileWasModified();

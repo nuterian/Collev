@@ -1,5 +1,10 @@
 var editor = new Object();
 
+var $console;
+
+log = function(text){
+	$console.append('<div>'+text+'</div>');
+}
 // Array Remove - By John Resig
 Array.prototype.remove = function(from, to) {
   var rest = this.slice((to || from) + 1 || this.length);
@@ -8,8 +13,8 @@ Array.prototype.remove = function(from, to) {
 };
 
 $(function(){
-	console.log('Initialized Collev');	
 
+	$console = $("#console");
 	var $editorTabs = $("#tabContainer");
 	var editorCode = document.getElementById("editorCode");
 
@@ -55,7 +60,6 @@ $(function(){
 			currFile.tab.removeClass('current');
 		}
 		currFile = openFiles[index];
-		console.log(currFile.tab);
 		currFile.tab.addClass('current');
 		$(currFile.code.getWrapperElement()).removeClass('cm-hide');
 		$(currFile.code.getWrapperElement()).addClass('cm-show');
@@ -75,22 +79,17 @@ $(function(){
 		setTimeout(currFile.code.refresh(), 10);
 	}
 	editor.close = function(index){
-		console.log('Deleting... =>');
-		console.log(openFiles);
 
 		openFiles[index].tab.remove();
 		$(openFiles[index].code.getWrapperElement()).remove();
 		openFiles.remove(index);
 		qEditor.closeFile(index);
 		editor.updateTabs();
-		console.log('Deleted! =>');
-		console.log(openFiles);
 	}
 		
 	editor.openFile = function(qFile){
-		console.log('Opening File - '+qFile.name);
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'['+qFile.mode+']</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
 		$editorTabs.append(file.tab);
 
 		file.code = CodeMirror(editorCode, {
@@ -116,10 +115,7 @@ $(function(){
         $(file.code.getScrollerElement()).width('100%');
 		
 		openFiles[qFile.id] = file;
-		console.log(qFile.id);
-		//editor.setCurrent(file);
 		editor.updateTabs();
-		console.log('File Opened');
 	}
 
 	editor.getFileContents = function(index){
@@ -141,8 +137,6 @@ $(function(){
 
 
 	$(window).resize(function(){
-		console.log('resizing');
-		//editor.updateTabs();
 	});
 
 	editor.updateTitle = function(index, title){

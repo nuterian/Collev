@@ -54,6 +54,11 @@ void MainWindow::attachObjects()
     frame->addToJavaScriptWindowObject(QString("qEditor"), qEditor);
 }
 
+void MainWindow::log(const QString &text)
+{
+    frame->evaluateJavaScript(tr("log('%1')").arg(text));
+}
+
 void MainWindow::loadFile(const QString &fileName)
 {
     frame->setUrl(QUrl(fileName));
