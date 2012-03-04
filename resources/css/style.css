@@ -120,18 +120,28 @@ html{overflow:hidden}
 	box-sizing:border-box;
 }
 
-#statusBar{
+#editorStatusbar{
 	position:absolute;
 	bottom:0;
 	left:0;
 	right:0;
-	height:20px;
-	background:#333;
+	line-height:12px;
+	font-size:11px;
+	color:#111;
+	text-shadow:0 1px 0 rgba(255,255,255,0.7);
+	padding:4px 6px;
 	border-top:1px solid #888;
 	box-shadow:inset 0 1px 0 white;
-	background: #B3B3B3;
-	background: -webkit-gradient(linear, center top, center bottom,from(#c7c7c7), to(#B3B3B3) );
+	background: -webkit-gradient(linear, center top, center bottom,from(#dedede), to(#cecece) );
 	box-sizing:border-box;
+	clear:both;
+}
+
+#editorStatusbar #modeName
+{
+	width:100px;
+	text-align:center;
+	float:right;
 }
 
 #editor{
@@ -175,7 +185,7 @@ html{overflow:hidden}
 	top:0;
 	left:200px;
 	right:0;
-	bottom:0;
+	bottom:21px;
 	box-sizing:border-box;
 }
 

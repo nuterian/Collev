@@ -25,6 +25,7 @@ $(function(){
 	$console = $("#console");
 
 	var $editorTabs = $("#tabContainer");
+	var $editorStatusbar = $("#editorStatusbar");
 	var editorCode = document.getElementById("editorCode");
 
 	var openFiles = new Array();
@@ -86,6 +87,8 @@ $(function(){
       		qEditor.hasRedo(false);
 
 		setTimeout(currFile.code.refresh(), 10);
+		editor.switchCurrMode(currFile.modeName, currFile.mimeType);
+
 	}
 	editor.close = function(index){
 
@@ -98,14 +101,14 @@ $(function(){
 		
 	editor.openFile = function(qFile){
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'['+qFile.mode+']</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
 		$editorTabs.append(file.tab);
 
 		file.code = CodeMirror(editorCode, {
 	          value: qFile.content,
 	          lineNumbers: true,
 	          theme: currTheme,
-	          //mode: qFile.mime,
+	          mode: qFile.mime,
 	          onChange: function(){
 	          	his = file.code.historySize();
 	          	if(his['undo'] == 1)
@@ -123,6 +126,9 @@ $(function(){
 	        });
 	    $(file.code.getScrollerElement()).height('100%');
         $(file.code.getScrollerElement()).width('100%');
+
+        file.modeName = qFile.mode;
+        file.mimeType = qFile.mime;
 		
 		openFiles[qFile.id] = file;
 		editor.updateTabs();
@@ -150,7 +156,11 @@ $(function(){
 	});
 
 	editor.switchCurrMode = function(name, mime){
-		currFile.code.setOption("mode", mime);
+		if(currFile.code.getOption("mode") != mime){
+			currFile.code.setOption("mode", mime);
+			currFile.modeName = name;
+		}
+		$("#modeName", $editorStatusbar).html(currFile.modeName);
 	}
 
 	editor.changeMode = function(index, typemap){
