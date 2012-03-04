@@ -5,6 +5,14 @@ var $console;
 log = function(text){
 	$console.append('<div>'+text+'</div>');
 }
+
+showConsole = function(show){
+	if(show)
+		$console.show();
+	else
+		$console.hide();
+}
+
 // Array Remove - By John Resig
 Array.prototype.remove = function(from, to) {
   var rest = this.slice((to || from) + 1 || this.length);
@@ -159,6 +167,22 @@ $(function(){
 		currTheme = theme;
 		editorCode.className = ('cm-s-'+theme);
 	}
+
+	editor.showSidebar = function(show){
+		var $sidebar = $("#editorSidebar");
+		var $codeContainer = $("#editorCodeContainer");
+		if(show){
+			$sidebar.show();
+			$codeContainer.css('left','200px');
+		}
+		else{
+			$sidebar.hide();
+			$codeContainer.css('left','0');
+		}
+	}
+
+	if(qEditor.isSidebarHidden())
+		editor.showSidebar(false);
 
 	qEditor.fileOpened.connect(editor.openFile);
 	qEditor.fileSave.connect(editor.saveFile);

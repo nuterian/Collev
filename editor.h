@@ -4,10 +4,10 @@
 #include <QObject>
 #include <QVariant>
 
-typedef QList<QVariantMap*> QVMapList;
 
 class QFile;
 
+typedef QList<QVariantMap*> QVMapList;
 class Editor : public QObject
 {
     Q_OBJECT
@@ -35,6 +35,8 @@ public:
     Q_INVOKABLE void setFileModified();
     Q_INVOKABLE void saveFileContents(int index, QString content);
 
+    Q_INVOKABLE bool isSidebarHidden();
+    void setSidebarHidden(bool);
     int cycleNextFile();
     int cyclePrevFile();
     bool hasOpenFile();
@@ -63,6 +65,7 @@ private:
     QVMapList tabOrder;
     QVMapList::iterator currentTab;
 
+    bool sidebarHidden;
 };
 
 #endif // EDITOR_H

@@ -70,6 +70,8 @@ void MainWindow::writeSettings()
     settings.beginGroup("MainWindow");
     settings.setValue("geometry", saveGeometry());
     settings.endGroup();
+
+    settings.setValue("Editor/showSidebar", toggleSidebarAction->data().toBool());
 }
 bool MainWindow::confirmQuit()
 {
@@ -154,6 +156,21 @@ void MainWindow::createActions()
     prevFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Tab));
     connect(prevFileStackAction, SIGNAL(triggered()), this, SLOT(prevFile()));
 
+    toggleSidebarAction= new QAction(tr("Hide Sidebar"),this);
+    connect(toggleSidebarAction, SIGNAL(triggered()), this, SLOT(toggleSidebar()));
+    bool sidebarShown = settings.value("Editor/showSidebar", true).toBool();
+    qEditor->setSidebarHidden(!sidebarShown);
+    if(!sidebarShown)
+        toggleSidebarAction->setText("Show Sidebar");
+
+    toggleConsoleAction= new QAction(tr("Show Console"),this);
+    toggleConsoleAction->setShortcut(QKeySequence(tr("Ctrl+`")));
+    connect(toggleConsoleAction, SIGNAL(triggered()), this, SLOT(toggleConsole()));
+    toggleConsoleAction->setData(false);
+    toggleFullScreenAction= new QAction(tr("Enter Full Screen"),this);
+    toggleFullScreenAction->setShortcut(QKeySequence(Qt::Key_F11));
+    connect(toggleFullScreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
+
     saveAction->setEnabled(false);
     saveAsAction->setEnabled(false);
     closeFileAction->setEnabled(false);
@@ -200,6 +217,11 @@ void MainWindow::createMenus()
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);
 
+    viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu->addAction(toggleSidebarAction);
+    viewMenu->addAction(toggleConsoleAction);
+    viewMenu->addSeparator();
+    viewMenu->addAction(toggleFullScreenAction);
     gotoMenu = menuBar()->addMenu(tr("&Goto"));
     gotoMenu->addAction(nextFileStackAction);
     gotoMenu->addAction(prevFileStackAction);
@@ -396,7 +418,37 @@ void MainWindow::prevFile()
     qEditor->cyclePrevFile();
 }
 
+void MainWindow::toggleSidebar()
+{
+    qEditor->setSidebarHidden(!qEditor->isSidebarHidden());
+    frame->evaluateJavaScript(tr("editor.showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
+    if(qEditor->isSidebarHidden())
+        toggleSidebarAction->setText("Show Sidebar");
+    else
+       toggleSidebarAction->setText("Hide Sidebar");
+}
 
+void MainWindow::toggleConsole()
+{
+    bool show = !toggleConsoleAction->data().toBool();
+    frame->evaluateJavaScript(tr("showConsole(%1)").arg(show));
+    toggleConsoleAction->setData(show);
+    if(show)
+        toggleConsoleAction->setText("Hide Console");
+    else
+       toggleConsoleAction->setText("Show Console");
+}
+void MainWindow::toggleFullScreen()
+{
+    if(isFullScreen()){
+        showNormal();
+        toggleFullScreenAction->setText("Enter Full Screen");
+    }
+    else{
+        showFullScreen();
+        toggleFullScreenAction->setText("Exit Full Screen");
+    }
+}
 void MainWindow::setEmpty(bool status)
 {
     if(status == false){

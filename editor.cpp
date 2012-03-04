@@ -7,6 +7,7 @@
 Editor::Editor(QObject *parent) : QObject(parent)
 {
     //currentOpenFile = NULL;
+    sidebarHidden = false;
 }
 
 void Editor::openFile(QFile &file)
@@ -190,5 +191,15 @@ void Editor::saveFileContents(int index, QString content)
 void Editor::retrieveFile(int index)
 {
     emit fileSave(index);
+}
+
+bool Editor::isSidebarHidden()
+{
+    return sidebarHidden;
+}
+
+void Editor::setSidebarHidden(bool ok)
+{
+    sidebarHidden = ok;
 }
 

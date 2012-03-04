@@ -42,6 +42,9 @@ private slots:
     void nextFile();
     void prevFile();
 
+    void toggleSidebar();
+    void toggleConsole();
+    void toggleFullScreen();
     void changeTheme();
 
     void setEmpty(bool);
@@ -81,6 +84,11 @@ private:
     QAction *copyAction;
     QAction *pasteAction;
 
+    QMenu *viewMenu;
+    QAction *toggleSidebarAction;
+    QAction *toggleConsoleAction;
+    QAction *toggleFullScreenAction;
+    QMenu *indentationMenu;
 
     QMenu *gotoMenu;
     QAction *nextFileStackAction;
