@@ -71,10 +71,11 @@ html{overflow:hidden}
 	top:0;
 	left:0;
 	bottom:0;
-	width:60px;
+	width:55px;
 	background:#444444;
-	box-shadow:1px 0 2px rgba(0,0,0,0.1);
-	z-index:100;
+	z-index:99999;
+	border-right:1px solid #111;
+	box-shadow:2px 0 2px rgba(0,0,0,0.2);
 	box-sizing:border-box;
 }
 
@@ -114,7 +115,7 @@ html{overflow:hidden}
 	position:absolute;
 	top:0;
 	right:0;
-	left:60px;
+	left:55px;
 	bottom:0;
 	box-sizing:border-box;
 }
@@ -141,6 +142,21 @@ html{overflow:hidden}
 	font-size:16px;
 }
 
+#console{
+	width:100%;
+	height:100%;
+	position: absolute;
+	top:0;left:0;right:0;bottom:0;
+	display:block;
+	background-color:rgba(0,0,0,0.85);
+	padding:10px;
+	color:#fff;
+	font-size:14px;
+	font-family: 'courier new', monospace;
+	z-index:99999;
+	display:none;
+}
+
 #editorSidebar{
 	position:absolute;
 	top:0;
@@ -164,10 +180,10 @@ html{overflow:hidden}
 }
 
 #editorTabs{
-	height:30px;
+	height:35px;
 	width:100%;
 	background: #B0B0B0;
-	background: -webkit-gradient(linear, center top, center bottom,from(#CBCBCB), to(#B0B0B0) );
+	background: -webkit-gradient(linear, center top, center bottom,from(#bebebe), to(#aeaeae) );
 	-webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
 	margin:0;
 	list-style:none;
@@ -175,12 +191,13 @@ html{overflow:hidden}
 	position:relative;
 	padding:0 10px;
 	box-sizing:border-box;
+	z-index:99990;
 }
 
 #editorCode{
 	display:block;
 	position: absolute;
-	top:37px;
+	top:42px;
 	right:0;
 	left:0;
 	bottom:0;
@@ -199,11 +216,11 @@ html{overflow:hidden}
 	height:5px;
 	width:100%;
 	position:absolute;
-	top:30px;
+	top:35px;
 	left:0;
-	border-top:1px solid #999;
-	border-bottom:1px solid #ccc;
-	-webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+	border-top:1px solid #888;
+	border-bottom:1px solid #aaa;
+	-webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 2px rgba(0,0,0,0.1);
 	background:#e5e5e5;
 }
 
@@ -213,21 +230,22 @@ html{overflow:hidden}
 	max-height:24px;	
 	display:table-cell;
 	overflow:hidden;
-	-webkit-transition: all 0.5 linearsdfsdfddd;
+	-webkit-box-shadow:0 1px 0 #e5e5e5;
+	-webkit-transition: all 0.5 linear;
 }
 
 #editorTabs li .tab{
 	background:#eee;
 	color:#111;
-	margin-top:6px;
-	border:1px solid #aaa;
+	margin-top:8px;
+	border:1px solid #888;
+	border-bottom:none;
 	font-size:11px;
-	line-height:16px;
-	height:24px;
+	line-height:20px;
+	height:27px;
 	text-shadow:0 1px 0 rgba(255,255,255,0.7);
-	-webkit-box-shadow:inset -2px 0px 2px #e3e3e3;
 	background: -webkit-gradient(linear, center top, center bottom,from(#e3e3e3), to(#d4d4d4) );
-	border-radius: 4px 4px 0 0;
+	border-radius: 2px 2px 0 0;
 	cursor: default;
 	position:relative;
 }
@@ -239,9 +257,7 @@ html{overflow:hidden}
 }
 
 #editorTabs li.current .tab, #editorTabs li.current .tab:hover{
-	background: -webkit-gradient(linear, center top, center bottom,from(#f9f9f9), to(#e5e5e6) );
-	border-bottom-color: #e5e5e6;
-	-webkit-box-shadow:0 1px 0 #e5e5e6;
+	background: -webkit-gradient(linear, center top, center bottom,from(#f9f9f9), to(#e5e5e5) );
 }
 
 #editorTabs li .tab:hover{
@@ -295,13 +311,15 @@ overflow-y:hidden;
 }
 
 .ico-close{
-width:14px;height:13px;
+width:14px;height:14px;
 background:url("../img/close.png") -0px -0px no-repeat;
-display: block;vertical-align: top;overflow: hidden;	
+display: block;vertical-align: top;overflow: hidden;
+opacity:0.5;
+margin-top:1px;	
 }
 
 .ico-close:hover{
-background:url("../img/close_over.png") -0px -0px no-repeat;	
+opacity:1	
 }
 
 
@@ -314,11 +332,11 @@ background:url("../img/close_over.png") -0px -0px no-repeat;
     background:#f4f4f4;
 }
 ::-webkit-scrollbar-track:vertical{
-	border-left:1px solid #ddd;
+	border-left:1px solid #aaa;
 	box-shadow:inset 2px 0 2px rgba(0,0,0,0.05);
 }
 ::-webkit-scrollbar-track:horizontal{
-	border-top:1px solid #ddd;
+	border-top:1px solid #aaa;
 	box-shadow:inset 0 2px 2px rgba(0,0,0,0.05);
 }
 
@@ -327,8 +345,12 @@ background:url("../img/close_over.png") -0px -0px no-repeat;
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background: -webkit-gradient(linear, center top, center bottom,from(#BBBBBB), to(#AAAAAA) );
-    border:1px solid #aaa;
+    border-radius: 2px;
+    background: -webkit-gradient(linear, center top, center bottom,from(#bebebe), to(#aeaeae) );
+    border:1px solid #999;
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 1px rgba(0,0,0,0.1);
+}
+
+::-webkit-scrollbar-thumb:hover{
+	border-color:#666;
 }
