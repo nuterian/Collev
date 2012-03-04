@@ -70,6 +70,8 @@ private:
     QWebView *view;
     QWebFrame *frame;
 
+    QString fileDialogString;
+
     QMenu *fileMenu;
     QAction *newFileAction;
     QAction *openFileAction;
@@ -102,6 +104,7 @@ private:
     QMenu *prefMenu;
     QMenu *themeMenu;
     QAction *themeActions[8];
+
 
 };
 

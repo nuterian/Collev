@@ -1,9 +1,9 @@
 CSS 		text/css			css
 C 			text/x-csrc			c h
-C++			text/x-c++src		cpp h
-HTML 		text/html			html htm xhtml shtml
+C++			text/x-c++src		cpp cc cxx c++ h hpp hxx h++ cp C hh 
+HTML 		text/html			html htm xhtml shtml inc
 Java 		text/x-java			java bsh
-Javascript 	text/javascript		js htc
+Javascript 	text/javascript		js htc jsx
 JSON 		application/json	json
 Markdown  	text/x-markdown		mdown markdown markdn md
 Pascal		text/x-pascal		P

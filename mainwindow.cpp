@@ -8,6 +8,8 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
+    fileDialogString = "All Files (*.*);;";
+
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     view = new QWebView(this);
 
@@ -43,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
                         " QMenuBar::item {spacing: 6px; padding:4px 6px;margin:2px 0;background: transparent;border-radius: 2px;}"
                         " QMenuBar::item:selected {background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);border:1px solid #999;}"
                         " QMenuBar::item:pressed {color:#fff;background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6e6e6e, stop:1 #4e4e4e);border-color:#222;}");
+
 }
 
 MainWindow::~MainWindow()
@@ -226,10 +229,22 @@ void MainWindow::createMenus()
     viewMenu->addSeparator();
     syntaxMenu = viewMenu->addMenu(tr("&Syntax"));
 
+    /*
+     * Intitialize Syntax Actions anf FileDialogString using fileTypes
+     */
     QVMapList fileTypes = qEditor->getFileTypes();
     syntaxActions.resize(fileTypes.size());
     for(int i=0; i<fileTypes.size(); i++){
-        syntaxActions[i] = syntaxMenu->addAction(((*fileTypes.at(i))["name"]).toString(), this, SLOT(changeSyntaxMode()));
+        QString name = ((*fileTypes.at(i))["name"]).toString();
+        QStringList exts = ((*fileTypes.at(i))["ext"]).toStringList();
+        QString extString;
+        for(int j=0; j<exts.size(); j++){
+            extString += tr("*.%1").arg(exts.at(j));
+            if(j!=(exts.size()-1))
+                extString += " ";
+        }
+        fileDialogString += tr("%1 (%2);;").arg(name).arg(extString);
+        syntaxActions[i] = syntaxMenu->addAction(name, this, SLOT(changeSyntaxMode()));
         syntaxActions[i]->setCheckable(true);
         syntaxActions[i]->setData((*fileTypes.at(i))["mime"]);
     }
@@ -332,7 +347,7 @@ void MainWindow::newFile()
 
 void MainWindow::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", "All Files (*.*);;C (*.c *.h);;C++ (*.cpp *.cc *.cxx *.c++ *.h *.hpp *.hxx *.h++ *.inl *.ipp *.cp *.C *.hh);;HTML (*.html *.htm  *.shtml *.xhtml *.inc *.tmpl *.tpl *.ctp;;Java(*.java *.bsh);;Javascript(*.js *.htc *.jsx);;PHP (*.php);;Python (*.py *.rpy *.pyw);;SQL (*.sql *.ddl *.dml)");
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", fileDialogString);
 
     if(fileName != ""){
         QFile file(fileName);
@@ -354,7 +369,7 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File As"), "", fileDialogString);
     if(fileName.isEmpty())
         return false;
     return saveFile(qEditor->getCurrentFileAttr("id").toInt(), fileName);

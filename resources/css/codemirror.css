@@ -1,6 +1,6 @@
 .CodeMirror {
-  line-height: 1em;
-  font-family: monospace;
+  line-height: 1.4em;
+  font-family: Consolas, 'Courier New', monospace;
 }
 
 .CodeMirror-scroll {
