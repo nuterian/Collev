@@ -81,7 +81,6 @@ html{overflow:hidden}
 
 #modeBar>div{
 	padding:10px 0;
-	opacity:0.5;
 	-webkit-transition: all .1s ease-in-out;
 }
 
@@ -90,12 +89,16 @@ html{overflow:hidden}
 	background:#222;
 }
 
-#modeBar>div:hover{
-	opacity:0.8;
-	background:#333;
+#modeBar>div:hover .ico{
+	opacity:1;
+}
+
+#modeBar>div.selected .ico{
+	opacity:1;
 }
 
 #modeBar .ico{
+	opacity:0.5;
 	text-align:center;
 	width:100%;
 }
@@ -108,6 +111,17 @@ html{overflow:hidden}
 	font-weight:bold;
 	text-shadow: 0 1px 1px black;
 	cursor:default;
+	opacity:0;
+	-webkit-transition: all 0.4s ease-in-out;
+}
+
+#modeBar>div:hover .label
+{
+	opacity:1;
+}
+
+#modeBar>div.selected .label{
+	opacity:1;
 }
 
 #mainContent
