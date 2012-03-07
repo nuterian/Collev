@@ -12,10 +12,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    editor.cpp
+    editor.cpp \
+    webapp.cpp
 
 HEADERS  += mainwindow.h \
-    editor.h
+    editor.h \
+    webapp.h
 
 RESOURCES += \
     resources/collev.qrc

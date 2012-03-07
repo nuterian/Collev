@@ -57,7 +57,6 @@ protected:
 private:
     void createActions();
     void createMenus();
-    void loadFile(const QString &fileName);
     bool saveFile(int index, const QString &fileName);
     bool confirmQuit();
     void writeSettings();

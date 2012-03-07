@@ -1,9 +1,8 @@
-#include <QtWebKit/QWebView>
-#include <QtWebKit/QWebFrame>
 #include <QtCore/QUrl>
 #include <QtGui>
 
 #include "mainwindow.h"
+#include "webapp.h"
 #include "editor.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
@@ -27,7 +26,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setMinimumSize(QSize(600, 400));
     settings.endGroup();
     qEditor = new Editor(this);
-    frame = view->page()->mainFrame();
+    frame = wApp.mainFrame();
+    //frame = view->page()->mainFrame();
     attachObjects();
     connect(frame, SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(attachObjects()));
     connect(qEditor, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentFile(int)));
@@ -35,7 +35,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(qEditor, SIGNAL(fileClose(int)), this, SLOT(closeFile(int)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), this, SLOT(setEmpty(bool)));
 
-    loadFile("qrc:/index.html");
+    wApp.loadFile("qrc:/index.html");
+    view->setPage(&wApp);
     setCentralWidget(view);
 
     createActions();
@@ -56,16 +57,6 @@ MainWindow::~MainWindow()
 void MainWindow::attachObjects()
 {
     frame->addToJavaScriptWindowObject(QString("qEditor"), qEditor);
-}
-
-void MainWindow::log(const QString &text)
-{
-    frame->evaluateJavaScript(tr("log('%1')").arg(text));
-}
-
-void MainWindow::loadFile(const QString &fileName)
-{
-    frame->setUrl(QUrl(fileName));
 }
 
 void MainWindow::writeSettings()
