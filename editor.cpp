@@ -5,6 +5,7 @@
 
 #include "editor.h"
 #include "webapp.h"
+#include "file.h"
 
 Editor::Editor(QObject *parent) : QObject(parent)
 {
@@ -107,89 +108,6 @@ bool Editor::isVisible()
     return visible;
 }
 
-void Editor::loadFileTypes()
-{
-    QFile mapFile(":/file.types");
-    QVariantMap *typeMap;
-    fileDialogString = "All Files (*.*);;";
-
-    if (!mapFile.open(QIODevice::ReadOnly)) return;
-    while(!mapFile.atEnd()){
-        QTextStream line(mapFile.readLine());
-        QString name,mime;
-        line >> name;
-        line >> mime;
-        if(name.isEmpty()) continue;
-        name.replace('.', ' ');
-        QStringList exts;
-        while(!line.atEnd()){
-            QString ext;
-            line >> ext;
-            if(!ext.isEmpty())
-                exts << ext;
-        }
-        typeMap = new QVariantMap;
-        (*typeMap)["name"] = name;
-        (*typeMap)["mime"] = mime;
-        (*typeMap)["ext"] = exts;
-
-        QString extString;
-        for(int j=0; j<exts.size(); j++){
-            extString += tr("*.%1").arg(exts.at(j));
-            if(j!=(exts.size()-1))
-                extString += " ";
-        }
-        fileDialogString += tr("%1 (%2);;").arg(name).arg(extString);
-
-        fileTypes.append(typeMap);
-        if(mime == "text/plain")
-            defaultType = typeMap;
-    }
-}
-
-QVariantMap* Editor::getDefaultFileType()
-{
-    return defaultType;
-}
-
-QVariantMap* Editor::getFileTypeByName(QString &fileName)
-{
-    QFileInfo info(fileName);
-    return getFileTypeByExt(info.suffix());
-}
-
-QVariantMap* Editor::getFileTypeByExt(QString ext)
-{
-    QVariantMap *typeMap;
-    for(int i=0; i<fileTypes.size(); i++){
-        typeMap = fileTypes.at(i);
-        QStringList exts = ((*typeMap)["ext"]).toStringList();
-        if(exts.contains(ext))
-            return typeMap;
-    }
-    return getDefaultFileType();
-}
-
-QVariantMap* Editor::getFileTypeByMode(QString mode)
-{
-    QVariantMap *typeMap;
-    for(int i=0; i<fileTypes.size(); i++){
-        typeMap = fileTypes.at(i);
-        if(mode == ((*typeMap)["name"]).toString())
-            return typeMap;
-    }
-    return getDefaultFileType();
-}
-
-QVMapList Editor::getFileTypes()
-{
-    return fileTypes;
-}
-
-QString* Editor::getFileDialogString()
-{
-    return &fileDialogString;
-}
 
 void Editor::openFile(QFile &file)
 {
@@ -202,13 +120,19 @@ void Editor::openFile(QFile &file)
     QVariantMap *typeMap = getFileTypeByExt((*filemap)["type"].toString());
     (*filemap)["mode"] = (*typeMap)["name"];
     (*filemap)["mime"] = (*typeMap)["mime"];
-    QTextStream in(&file);
-    (*filemap)["content"] = in.readAll();
+    // QTextStream in(&file);
+    //(*filemap)["content"] = in.readAll();
     int index = openFiles.size();
     (*filemap)["id"] = index;
     (*filemap)["modified"] = false;
     (*filemap)["new"] = false;
     openFiles.append(filemap);
+
+    File *f = new File(&file);
+    files.append(f);
+
+    wApp.addObject("file", f);
+    emit fOpened();
 
     emit fileOpened(*filemap);
     changeCurrent(index);

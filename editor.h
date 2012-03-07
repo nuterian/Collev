@@ -9,6 +9,7 @@ class QFile;
 class QActionGroup;
 class QAction;
 class QMenu;
+class File;
 
 typedef QList<QVariantMap*> QVMapList;
 class Editor : public QObject
@@ -43,13 +44,6 @@ public:
     bool hasOpenFile();
     bool hasOpenFileAndVisible();
 
-    QVariantMap* getDefaultFileType();
-    QVariantMap* getFileTypeByName(QString& fileName);
-    QVariantMap* getFileTypeByExt(QString ext);
-    QVariantMap* getFileTypeByMode(QString mode);
-    QVMapList getFileTypes();
-    QString* getFileDialogString();
-
     void show();
     void hide();
     bool isVisible();
@@ -81,6 +75,7 @@ signals:
     bool hasRedo(bool);
 
     void fileOpened(QVariantMap file);
+    void fOpened();
     void fileSave(int index);
     void fileSaved(int index);
     void fileTitleChanged(int index, QVariantMap file);
@@ -93,6 +88,10 @@ signals:
 private:
     QVariantMap *currentOpenFile;
     QVMapList openFiles;
+
+    File *currFile;
+    QList<File*> files;
+
     QVMapList tabOrder;
     QVMapList::iterator currentTab;
 

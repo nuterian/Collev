@@ -13,11 +13,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     editor.cpp \
-    webapp.cpp
+    webapp.cpp \
+    file.cpp \
+    filetypemanager.cpp
 
 HEADERS  += mainwindow.h \
     editor.h \
-    webapp.h
+    webapp.h \
+    file.h \
+    filetypemanager.h
 
 RESOURCES += \
     resources/collev.qrc

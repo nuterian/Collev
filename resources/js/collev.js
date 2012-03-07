@@ -98,8 +98,19 @@ $(function(){
 		qEditor.closeFile(index);
 		editor.updateTabs();
 	}
+
+	var fIndex=0;
+	var fArr = new Array();
+	editor.open = function()
+	{
+		console.log(window.file);
+		fArr[fIndex++] = window.file;
+		delete window.file;
+		console.log(fArr);
+	}
 		
 	editor.openFile = function(qFile){
+		console.log(qFile);
 		var file = new Object();
 		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
 		$editorTabs.append(file.tab);
@@ -209,6 +220,8 @@ $(function(){
 		editor.showSidebar(false);
 
 	qEditor.fileOpened.connect(editor.openFile);
+	qEditor.fOpened.connect(editor.open);
+
 	qEditor.fileSave.connect(editor.saveFile);
 	qEditor.fileTitleChanged.connect(editor.updateTitle);
 	qEditor.fileTypeChanged.connect(editor.changeMode);
