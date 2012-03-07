@@ -18,9 +18,6 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-public slots:
-    void log(const QString&);
-
 private slots:
     void updateCurrentFile(int index);
     void fileWasModified();
@@ -46,8 +43,6 @@ private slots:
     void toggleSidebar();
     void toggleConsole();
     void toggleFullScreen();
-    void changeTheme();
-    void changeSyntaxMode();
 
     void setEmpty(bool);
 
@@ -59,6 +54,7 @@ private:
     void createMenus();
     bool saveFile(int index, const QString &fileName);
     bool confirmQuit();
+    void readSettings();
     void writeSettings();
 
 
@@ -69,7 +65,7 @@ private:
     QWebView *view;
     QWebFrame *frame;
 
-    QString fileDialogString;
+    QString *fileDialogString;
 
     QMenu *fileMenu;
     QAction *newFileAction;

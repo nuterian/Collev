@@ -8,12 +8,12 @@ WebApp::WebApp(QObject *parent) :QWebPage(parent)
 
 void WebApp::loadFile(const QString &filePath)
 {
-    mainFrame()->setUrl(QUrl(file));
+    mainFrame()->setUrl(QUrl(filePath));
 }
 
-void WebApp::eval(const QString &scriptSource)
+QVariant WebApp::eval(const QString &scriptSource)
 {
-    mainFrame()->evaluateJavaScript(scriptSource);
+    return mainFrame()->evaluateJavaScript(scriptSource);
 }
 
 void WebApp::addObject(const QString &name, QObject *object)

@@ -1,8 +1,10 @@
-#include "editor.h"
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
-#include <QMessageBox>
+#include <QtGui>
+
+#include "editor.h"
+#include "webapp.h"
 
 Editor::Editor(QObject *parent) : QObject(parent)
 {
@@ -10,12 +12,107 @@ Editor::Editor(QObject *parent) : QObject(parent)
     sidebarHidden = false;
     defaultType = NULL;
     loadFileTypes();
+    createActions();
+
+    visible = false;
+    show(); // Let's show the editor by default for now
+}
+
+void Editor::createActions()
+{
+    nextFileStackAction = createAction(tr("Next File in Stack"), parent());
+    nextFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab));
+    connect(nextFileStackAction, SIGNAL(triggered()), this, SLOT(cycleNextFile()));
+
+    prevFileStackAction = createAction(tr("Previous File in Stack"), parent());
+    prevFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Tab));
+    connect(prevFileStackAction, SIGNAL(triggered()), this, SLOT(cyclePrevFile()));
+
+    syntaxActions = new QActionGroup(parent());
+    for(int i=0; i<fileTypes.size(); i++){
+        QVariantMap *typeMap = fileTypes.at(i);
+        QAction *a = createAction((*typeMap)["name"].toString(), syntaxActions);
+        a->setData((*typeMap)["mime"]);
+        if(typeMap == defaultType)
+            a->setChecked(true);
+    }
+
+    themeActions = new QActionGroup(parent());
+    createAction("Default", themeActions)->setChecked(true);
+    createAction("", themeActions);
+    createAction("Cobalt", themeActions);
+    createAction("Eclipse", themeActions);
+    createAction("Elegant", themeActions);
+    createAction("Monokai", themeActions);
+    createAction("Neat", themeActions);
+    createAction("Night", themeActions);
+
+    connect(syntaxActions, SIGNAL(triggered(QAction*)), this, SLOT(changeSyntaxMode(QAction*)));
+    connect(themeActions, SIGNAL(triggered(QAction*)), this, SLOT(changeTheme(QAction*)));
+}
+
+void Editor::changeSyntaxMode(QAction *syntaxAction)
+{
+    wApp.eval(tr("editor.switchCurrMode('%1','%2')").arg(syntaxAction->text()).arg(syntaxAction->data().toString()));
+    setCurrentFileAttr("mode", syntaxAction->text());
+}
+
+void Editor::changeTheme(QAction *themeAction)
+{
+    wApp.eval(tr("editor.changeTheme('%1')").arg(themeAction->text().toLower()));
+}
+
+QAction* Editor::createAction(const QString &text, QObject *parent)
+{
+    QAction *a;
+    if(text.isEmpty()){
+        a = new QAction(parent);
+        a->setSeparator(true);
+    }
+    else{
+        a = new QAction(text, parent);
+    }
+    if(a->actionGroup() == 0){
+        actions.append(a);
+        a->setEnabled(false);
+        connect(this, SIGNAL(hasOpenFile(bool)), a, SLOT(setEnabled(bool)));
+    }
+    else{
+        a->setCheckable(true);
+        actions.append(a->actionGroup());
+        a->actionGroup()->setEnabled(false);
+        connect(this, SIGNAL(hasOpenFile(bool)), a->actionGroup(), SLOT(setEnabled(bool)));
+    }
+    return a;
+}
+
+void Editor::show()
+{
+    visible = true;
+    /*
+     * Show JS Implementation goes here...
+     */
+}
+
+void Editor::hide()
+{
+    visible = false;
+    /*
+     * Hide JS Implementation goes here...
+     */
+}
+
+bool Editor::isVisible()
+{
+    return visible;
 }
 
 void Editor::loadFileTypes()
 {
     QFile mapFile(":/file.types");
     QVariantMap *typeMap;
+    fileDialogString = "All Files (*.*);;";
+
     if (!mapFile.open(QIODevice::ReadOnly)) return;
     while(!mapFile.atEnd()){
         QTextStream line(mapFile.readLine());
@@ -35,6 +132,15 @@ void Editor::loadFileTypes()
         (*typeMap)["name"] = name;
         (*typeMap)["mime"] = mime;
         (*typeMap)["ext"] = exts;
+
+        QString extString;
+        for(int j=0; j<exts.size(); j++){
+            extString += tr("*.%1").arg(exts.at(j));
+            if(j!=(exts.size()-1))
+                extString += " ";
+        }
+        fileDialogString += tr("%1 (%2);;").arg(name).arg(extString);
+
         fileTypes.append(typeMap);
         if(mime == "text/plain")
             defaultType = typeMap;
@@ -78,6 +184,11 @@ QVariantMap* Editor::getFileTypeByMode(QString mode)
 QVMapList Editor::getFileTypes()
 {
     return fileTypes;
+}
+
+QString* Editor::getFileDialogString()
+{
+    return &fileDialogString;
 }
 
 void Editor::openFile(QFile &file)
@@ -167,6 +278,11 @@ bool Editor::hasOpenFile()
     else return true;
 }
 
+bool Editor::hasOpenFileAndVisible()
+{
+    return (hasOpenFile() && visible);
+}
+
 void Editor::switchCurrTab()
 {
     tabOrder.push_front(tabOrder.takeAt(tabOrder.indexOf(*currentTab)));
@@ -203,6 +319,17 @@ void Editor::changeCurrent(int index)
         currentTab = tabOrder.begin();
         while(*currentTab != currentOpenFile)
             ++currentTab;
+    }
+
+    QList<QAction*> actions = syntaxActions->actions();
+    for(int i=0; i< actions.size(); i++){
+        if(actions[i]->text() != (*currentOpenFile)["mode"]){
+            if(actions[i]->isChecked())
+                actions[i]->setChecked(false);
+        }
+        else{
+            actions[i]->setChecked(true);
+        }
     }
     emit currentChanged(index);
 }

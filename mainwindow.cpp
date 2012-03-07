@@ -1,5 +1,6 @@
 #include <QtCore/QUrl>
 #include <QtGui>
+#include <QWebView>
 
 #include "mainwindow.h"
 #include "webapp.h"
@@ -7,27 +8,15 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    fileDialogString = "All Files (*.*);;";
+    // Read and Intialize Application Settings
+    readSettings();
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    // Initialize Data Members
     view = new QWebView(this);
-
-    QSettings settings("Nuterian", "Collev");
-    settings.beginGroup("MainWindow");
-    if(settings.contains("geometry")){
-        restoreGeometry(settings.value("geometry").toByteArray());
-    }
-    else{
-        resize(QSize(750, 500));
-        QRect frect = frameGeometry();
-        frect.moveCenter(QDesktopWidget().availableGeometry().center());
-        move(frect.topLeft());
-    }
-    setMinimumSize(QSize(600, 400));
-    settings.endGroup();
     qEditor = new Editor(this);
+    fileDialogString = qEditor->getFileDialogString();
     frame = wApp.mainFrame();
-    //frame = view->page()->mainFrame();
+
     attachObjects();
     connect(frame, SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(attachObjects()));
     connect(qEditor, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentFile(int)));
@@ -41,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     createActions();
     createMenus();
-   // menuBar()->setStyleSheet("background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #2198c0, stop: 1 #0d5ca6);
     this->setStyleSheet(" QMenuBar {padding:4px 6px;border-bottom:1px solid #444;background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);}"
                         " QMenuBar::item {spacing: 6px; padding:4px 6px;margin:2px 0;background: transparent;border-radius: 2px;}"
                         " QMenuBar::item:selected {background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);border:1px solid #999;}"
@@ -56,7 +44,26 @@ MainWindow::~MainWindow()
 
 void MainWindow::attachObjects()
 {
-    frame->addToJavaScriptWindowObject(QString("qEditor"), qEditor);
+    wApp.addObject(QString("qEditor"), qEditor);
+}
+
+void MainWindow::readSettings()
+{
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+
+    QSettings settings("Nuterian", "Collev");
+    settings.beginGroup("MainWindow");
+    if(settings.contains("geometry")){
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }
+    else{
+        resize(QSize(750, 500));
+        QRect frect = frameGeometry();
+        frect.moveCenter(QDesktopWidget().availableGeometry().center());
+        move(frect.topLeft());
+    }
+    setMinimumSize(QSize(600, 400));
+    settings.endGroup();
 }
 
 void MainWindow::writeSettings()
@@ -143,13 +150,6 @@ void MainWindow::createActions()
     pasteAction->setStatusTip(tr("Paste text from clipboard."));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
 
-    nextFileStackAction = new QAction(tr("Next File in Stack"),this);
-    nextFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab));
-    connect(nextFileStackAction, SIGNAL(triggered()), this, SLOT(nextFile()));
-
-    prevFileStackAction = new QAction(tr("Previous File in Stack"),this);
-    prevFileStackAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Tab));
-    connect(prevFileStackAction, SIGNAL(triggered()), this, SLOT(prevFile()));
 
     toggleSidebarAction= new QAction(tr("Hide Sidebar"),this);
     connect(toggleSidebarAction, SIGNAL(triggered()), this, SLOT(toggleSidebar()));
@@ -177,15 +177,11 @@ void MainWindow::createActions()
     copyAction->setEnabled(false);
     pasteAction->setEnabled(false);
 
-    nextFileStackAction->setEnabled(false);
-    prevFileStackAction->setEnabled(false);
-
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAsAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), closeFileAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), closeAllFilesAction, SLOT(setEnabled(bool)));
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), nextFileStackAction, SLOT(setEnabled(bool)));
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), prevFileStackAction, SLOT(setEnabled(bool)));
+
     connect(qEditor, SIGNAL(hasUndo(bool)), undoAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasRedo(bool)), redoAction, SLOT(setEnabled(bool)));
 }
@@ -219,81 +215,18 @@ void MainWindow::createMenus()
     viewMenu->addAction(toggleFullScreenAction);
     viewMenu->addSeparator();
     syntaxMenu = viewMenu->addMenu(tr("&Syntax"));
+    syntaxMenu->addActions(qEditor->syntaxActions->actions());
 
-    /*
-     * Intitialize Syntax Actions anf FileDialogString using fileTypes
-     */
-    QVMapList fileTypes = qEditor->getFileTypes();
-    syntaxActions.resize(fileTypes.size());
-    for(int i=0; i<fileTypes.size(); i++){
-        QString name = ((*fileTypes.at(i))["name"]).toString();
-        QStringList exts = ((*fileTypes.at(i))["ext"]).toStringList();
-        QString extString;
-        for(int j=0; j<exts.size(); j++){
-            extString += tr("*.%1").arg(exts.at(j));
-            if(j!=(exts.size()-1))
-                extString += " ";
-        }
-        fileDialogString += tr("%1 (%2);;").arg(name).arg(extString);
-        syntaxActions[i] = syntaxMenu->addAction(name, this, SLOT(changeSyntaxMode()));
-        syntaxActions[i]->setCheckable(true);
-        syntaxActions[i]->setData((*fileTypes.at(i))["mime"]);
-    }
-    syntaxMenu->setEnabled(false);
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), syntaxMenu, SLOT(setEnabled(bool)));
 
     gotoMenu = menuBar()->addMenu(tr("&Goto"));
-    gotoMenu->addAction(nextFileStackAction);
-    gotoMenu->addAction(prevFileStackAction);
-    //gotoMenu->addAction(matchBracketAction);
+    gotoMenu->addAction(qEditor->nextFileStackAction);
+    gotoMenu->addAction(qEditor->prevFileStackAction);
 
     prefMenu = menuBar()->addMenu(tr("&Preferences"));
     themeMenu = prefMenu->addMenu(tr("&Theme"));
 
-    themeActions[0] = themeMenu->addAction("Default", this, SLOT(changeTheme()));
-    themeMenu->addSeparator();
-    themeActions[1] = themeMenu->addAction("Cobalt",this, SLOT(changeTheme()));
-    themeActions[2] = themeMenu->addAction("Eclipse", this, SLOT(changeTheme()));
-    themeActions[3] = themeMenu->addAction("Elegant", this, SLOT(changeTheme()));
-    themeActions[4] = themeMenu->addAction("Monokai", this, SLOT(changeTheme()));
-    themeActions[5] = themeMenu->addAction("Neat", this, SLOT(changeTheme()));
-    themeActions[6] = themeMenu->addAction("Night", this, SLOT(changeTheme()));
-
-    for(int i=0; i<7; i++){
-        themeActions[i]->setCheckable(true);
-    }
-    themeActions[0]->setChecked(true);
+    themeMenu->addActions(qEditor->themeActions->actions());
 }
-
-void MainWindow::changeTheme()
-{
-    QAction *action = qobject_cast<QAction *>(sender());
-    if(action){
-        for(int i=0; i< 7; i++){
-            if(themeActions[i]->isChecked() && themeActions[i] != action){
-                themeActions[i]->setChecked(false);
-            }
-        }
-        action->setChecked(true);
-        frame->evaluateJavaScript(tr("editor.changeTheme('%1')").arg(action->text().toLower()));
-    }
-}
-
-void MainWindow::changeSyntaxMode()
-{
-    QAction *action = qobject_cast<QAction *>(sender());
-    if(action){
-        for(int i=0; i< syntaxActions.size(); i++){
-            if(syntaxActions[i]->isChecked() && syntaxActions[i] != action){
-                syntaxActions[i]->setChecked(false);
-            }
-        }
-        action->setChecked(true);
-        frame->evaluateJavaScript(tr("editor.switchCurrMode('%1','%2')").arg(action->text()).arg(action->data().toString()));
-        qEditor->setCurrentFileAttr("mode", action->text());
-    }
-}
-
 
 bool MainWindow::saveFile(int index, const QString &fileName)
 {
@@ -339,7 +272,7 @@ void MainWindow::newFile()
 
 void MainWindow::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", fileDialogString);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", *fileDialogString);
 
     if(fileName != ""){
         QFile file(fileName);
@@ -361,7 +294,7 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File As"), "", fileDialogString);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File As"), "", *fileDialogString);
     if(fileName.isEmpty())
         return false;
     return saveFile(qEditor->getCurrentFileAttr("id").toInt(), fileName);
@@ -456,7 +389,7 @@ void MainWindow::prevFile()
 void MainWindow::toggleSidebar()
 {
     qEditor->setSidebarHidden(!qEditor->isSidebarHidden());
-    frame->evaluateJavaScript(tr("editor.showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
+    wApp.eval(tr("editor.showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
     if(qEditor->isSidebarHidden())
         toggleSidebarAction->setText("Show Sidebar");
     else
@@ -494,16 +427,6 @@ void MainWindow::setEmpty(bool status)
 
 void MainWindow::updateCurrentFile(int index)
 {
-    QString currMode = qEditor->getCurrentFileAttr("mode").toString();
-    for(int i=0; i< syntaxActions.size(); i++){
-        if(syntaxActions[i]->text() != currMode){
-            if(syntaxActions[i]->isChecked())
-                syntaxActions[i]->setChecked(false);
-        }
-        else{
-            syntaxActions[i]->setChecked(true);
-        }
-    }
     this->setWindowTitle(tr("%1[*] - Collev").arg(qEditor->getCurrentFileAttr("name").toString()));
     setWindowModified(qEditor->getCurrentFileAttr("modified").toBool());
 }

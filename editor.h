@@ -6,6 +6,9 @@
 
 
 class QFile;
+class QActionGroup;
+class QAction;
+class QMenu;
 
 typedef QList<QVariantMap*> QVMapList;
 class Editor : public QObject
@@ -37,19 +40,40 @@ public:
 
     Q_INVOKABLE bool isSidebarHidden();
     void setSidebarHidden(bool);
-    int cycleNextFile();
-    int cyclePrevFile();
     bool hasOpenFile();
+    bool hasOpenFileAndVisible();
 
     QVariantMap* getDefaultFileType();
     QVariantMap* getFileTypeByName(QString& fileName);
     QVariantMap* getFileTypeByExt(QString ext);
     QVariantMap* getFileTypeByMode(QString mode);
     QVMapList getFileTypes();
+    QString* getFileDialogString();
+
+    void show();
+    void hide();
+    bool isVisible();
+
+    QAction *nextFileStackAction;
+    QAction *prevFileStackAction;
+    QActionGroup *syntaxActions;
+    QActionGroup *themeActions;
+    QList<QObject*> actions;
+
+public slots:
+    int cycleNextFile();
+    int cyclePrevFile();
+
+private slots:
+    void changeSyntaxMode(QAction* syntaxAction);
+    void changeTheme(QAction* themeAction);
+
 private:
+    void createActions();
     void sendMsgJS(QString msg);
     void switchCurrTab();
     void loadFileTypes();
+    QAction* createAction( const QString & text, QObject * parent );
 
 signals:
     bool hasOpenFile(bool);
@@ -74,7 +98,9 @@ private:
 
     QVMapList fileTypes;
     QVariantMap *defaultType;
+    QString fileDialogString;
     bool sidebarHidden;
+    bool visible;
 };
 
 #endif // EDITOR_H
