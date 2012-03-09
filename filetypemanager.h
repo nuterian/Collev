@@ -3,12 +3,11 @@
 
 #include <QMetaType>
 #include <QObject>
+#include <QStringList>
+#include <QVariant>
 
 #define FileTypes FileTypeManager::getInstance()
 
-class QStringList;
-class QList;
-class QVariantMap;
 
 struct FileType
 {
@@ -16,19 +15,18 @@ struct FileType
     QString mimeName;
     QStringList extensions;
 
-    QVariantMap& toMap();
+    QVariantMap toMap();
 };
 
 Q_DECLARE_METATYPE(FileType)
 
 
-class FileTypeManager
+class FileTypeManager : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(QString filterString READ getFilterString)
-    Q_PROPERTY(FileType typeCount READ getTypeCount)
-    Q_PROPERTY(FileType defaultType READ getDefaultType)
+    Q_PROPERTY(int typeCount READ getTypeCount)
 
 public:
     static FileTypeManager& getInstance()
@@ -46,7 +44,7 @@ public:
     QString& getFilterString();
 
 protected:
-    FileTypeManager();
+    FileTypeManager(QObject *parent = 0);
     static FileTypeManager *m_instance;
 
 private:

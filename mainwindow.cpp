@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "webapp.h"
 #include "editor.h"
+#include "file.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -14,14 +15,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Initialize Data Members
     view = new QWebView(this);
     qEditor = new Editor(this);
-    fileDialogString = qEditor->getFileDialogString();
+    fileDialogString = &FileTypes.getFilterString();
     frame = wApp.mainFrame();
 
     attachObjects();
     connect(frame, SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(attachObjects()));
-    connect(qEditor, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentFile(int)));
-    connect(qEditor, SIGNAL(fileModified()), this, SLOT(fileWasModified()));
-    connect(qEditor, SIGNAL(fileClose(int)), this, SLOT(closeFile(int)));
+    connect(qEditor, SIGNAL(currFileChanged(File*)), this, SLOT(updateCurrentFile(File*)));
     connect(qEditor, SIGNAL(hasOpenFile(bool)), this, SLOT(setEmpty(bool)));
 
     wApp.loadFile("qrc:/index.html");
@@ -37,15 +36,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 }
 
-MainWindow::~MainWindow()
-{
-
+MainWindow::~MainWindow(){
 }
 
 void MainWindow::attachObjects()
 {
     wApp.addObject(QString("qEditor"), qEditor);
 }
+
 
 void MainWindow::readSettings()
 {
@@ -75,10 +73,12 @@ void MainWindow::writeSettings()
 
     settings.setValue("Editor/showSidebar", toggleSidebarAction->data().toBool());
 }
+
 bool MainWindow::confirmQuit()
 {
     return true;
 }
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (confirmQuit()) {
@@ -88,6 +88,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
     }
 }
+
 void MainWindow::createActions()
 {
     QSettings settings("Nuterian", "Collev");
@@ -101,29 +102,10 @@ void MainWindow::createActions()
     openFileAction->setStatusTip(tr("Open an existing file."));
     connect(openFileAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
-    saveAction = new QAction(tr("&Save"),this);
-    saveAction->setShortcut(QKeySequence::Save);
-    saveAction->setStatusTip(tr("Save current file."));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
-
-    saveAsAction = new QAction(tr("Save &As"),this);
-    saveAsAction->setShortcut(QKeySequence::SaveAs);
-    saveAsAction->setStatusTip(tr("Save file with different name."));
-    connect(saveAsAction, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-    closeFileAction = new QAction(tr("&Close File"),this);
-    closeFileAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
-    closeFileAction->setStatusTip(tr("Close current open file."));
-    connect(closeFileAction, SIGNAL(triggered()), this, SLOT(closeFile()));
-
-    closeAllFilesAction = new QAction(tr("Close All Files"),this);
-    closeAllFilesAction->setStatusTip(tr("Close all open files."));
-    connect(closeAllFilesAction, SIGNAL(triggered()), this, SLOT(closeAllFiles()));
-
     exitAction = new QAction(tr("E&xit"),this);
     exitAction->setShortcut(QKeySequence::Quit);
     exitAction->setStatusTip(tr("Exit to Windows."));
-    connect(saveAsAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     undoAction = new QAction(tr("&Undo"),this);
     undoAction->setShortcut(QKeySequence::Undo);
@@ -166,21 +148,12 @@ void MainWindow::createActions()
     toggleFullScreenAction->setShortcut(QKeySequence(Qt::Key_F11));
     connect(toggleFullScreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
 
-    saveAction->setEnabled(false);
-    saveAsAction->setEnabled(false);
-    closeFileAction->setEnabled(false);
-    closeAllFilesAction->setEnabled(false);
     undoAction->setEnabled(false);
     redoAction->setEnabled(false);
 
     cutAction->setEnabled(false);
     copyAction->setEnabled(false);
     pasteAction->setEnabled(false);
-
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAction, SLOT(setEnabled(bool)));
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), saveAsAction, SLOT(setEnabled(bool)));
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), closeFileAction, SLOT(setEnabled(bool)));
-    connect(qEditor, SIGNAL(hasOpenFile(bool)), closeAllFilesAction, SLOT(setEnabled(bool)));
 
     connect(qEditor, SIGNAL(hasUndo(bool)), undoAction, SLOT(setEnabled(bool)));
     connect(qEditor, SIGNAL(hasRedo(bool)), redoAction, SLOT(setEnabled(bool)));
@@ -191,11 +164,11 @@ void MainWindow::createMenus()
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newFileAction);
     fileMenu->addAction(openFileAction);
-    fileMenu->addAction(saveAction);
-    fileMenu->addAction(saveAsAction);
+    fileMenu->addAction(qEditor->saveAction);
+    fileMenu->addAction(qEditor->saveAsAction);
     fileMenu->addSeparator();
-    fileMenu->addAction(closeFileAction);
-    fileMenu->addAction(closeAllFilesAction);
+    fileMenu->addAction(qEditor->closeFileAction);
+    fileMenu->addAction(qEditor->closeAllFilesAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
@@ -228,39 +201,6 @@ void MainWindow::createMenus()
     themeMenu->addActions(qEditor->themeActions->actions());
 }
 
-bool MainWindow::saveFile(int index, const QString &fileName)
-{
-    qEditor->retrieveFile(index);
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Collev"),
-                             tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
-        return false;
-    }
-
-    QTextStream out(&file);
-
-    #ifndef QT_NO_CURSOR
-        QApplication::setOverrideCursor(Qt::ArrowCursor);
-    #endif
-        out << qEditor->getFileAttr(index, "content").toString();
-    #ifndef QT_NO_CURSOR
-        QApplication::restoreOverrideCursor();
-    #endif
-
-    qEditor->setFileAttr(index, "modified", false);
-    qEditor->setFileAttr(index, "new", false);
-    QFileInfo info(file.fileName());
-    qEditor->setFileAttr(index, "name", info.fileName());
-    qEditor->setFileAttr(index, "path", info.filePath());
-
-    updateCurrentFile(index);
-    return true;
-
-}
-
 ///////////////////////////////////////////////////////////////////////////
 //  SLOTS
 ///////////////////////////////////////////////////////////////////////////
@@ -285,69 +225,6 @@ void MainWindow::openFile()
     }
 }
 
-bool MainWindow::save()
-{
-    if(qEditor->getCurrentFileAttr("new").toBool() == true) // Newly created File, hence needs to be saved as.
-        return saveAs();
-    return saveFile(qEditor->getCurrentFileAttr("id").toInt(),qEditor->getCurrentFileAttr("path").toString());
-}
-
-bool MainWindow::saveAs()
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File As"), "", *fileDialogString);
-    if(fileName.isEmpty())
-        return false;
-    return saveFile(qEditor->getCurrentFileAttr("id").toInt(), fileName);
-}
-
-bool MainWindow::closeFile()
-{
-    if(qEditor->getCurrentFileAttr("modified").toBool())
-    {
-        QMessageBox msgBox;
-        QString fileName = qEditor->getCurrentFileAttr("name").toString();
-        if(qEditor->getCurrentFileAttr("new").toBool())
-            fileName = "New File";
-        msgBox.setText(tr("%1 has been modified.").arg(fileName));
-        msgBox.setInformativeText("Do you want to save your changes?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        int ret = msgBox.exec();
-
-        switch (ret) {
-          case QMessageBox::Save:
-              if(!save())return false;
-              break;
-          case QMessageBox::Discard:
-              break;
-          case QMessageBox::Cancel:
-              return false;
-              break;
-          default:
-              return false;
-              break;
-        }
-    }
-    frame->evaluateJavaScript(tr("editor.close(%1)").arg(qEditor->getCurrentFileIndex()));
-    return true;
-}
-
-bool MainWindow::closeFile(int index)
-{
-    qEditor->changeCurrent(index);
-    return closeFile();
-}
-
-void MainWindow::closeAllFiles()
-{
-    int index = qEditor->getCurrentFileIndex();
-    while(1){
-        if(!closeFile(index)) break;
-        if(!qEditor->hasOpenFile()) break;
-        index = qEditor->cycleNextFile();
-    }
-}
-
 void MainWindow::undo()
 {
     frame->evaluateJavaScript("editor.undo()");
@@ -369,7 +246,6 @@ void MainWindow::copy()
 {
     view->page()->triggerAction(QWebPage::Copy);
 }
-
 
 void MainWindow::paste()
 {
@@ -406,6 +282,7 @@ void MainWindow::toggleConsole()
     else
        toggleConsoleAction->setText("Show Console");
 }
+
 void MainWindow::toggleFullScreen()
 {
     if(isFullScreen()){
@@ -417,6 +294,7 @@ void MainWindow::toggleFullScreen()
         toggleFullScreenAction->setText("Exit Full Screen");
     }
 }
+
 void MainWindow::setEmpty(bool status)
 {
     if(status == false){
@@ -425,14 +303,19 @@ void MainWindow::setEmpty(bool status)
     }
 }
 
-void MainWindow::updateCurrentFile(int index)
+void MainWindow::updateCurrentFile(File *file)
 {
-    this->setWindowTitle(tr("%1[*] - Collev").arg(qEditor->getCurrentFileAttr("name").toString()));
-    setWindowModified(qEditor->getCurrentFileAttr("modified").toBool());
+    this->setWindowTitle(tr("%1[*] - Collev").arg(file->getName()));
+    setWindowModified(file->isModified());
 }
 
 void MainWindow::fileWasModified()
 {
     setWindowModified(true);
+}
+
+void MainWindow::setTitle(const QString &title)
+{
+    this->setWindowTitle(tr("%1[*] - Collev").arg(title));
 }
 

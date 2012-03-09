@@ -10,6 +10,8 @@ class QWebView;
 class QWebFrame;
 
 class Editor;
+class File;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -18,18 +20,16 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void setTitle(const QString &);
+
 private slots:
-    void updateCurrentFile(int index);
+    void updateCurrentFile(File*);
     void fileWasModified();
     void attachObjects();
 
     void newFile();
     void openFile();
-    bool save();
-    bool saveAs();
-    bool closeFile();
-    bool closeFile(int index);
-    void closeAllFiles();
 
     void undo();
     void redo();
@@ -45,6 +45,7 @@ private slots:
     void toggleFullScreen();
 
     void setEmpty(bool);
+    //void onLoad(bool);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -52,7 +53,6 @@ protected:
 private:
     void createActions();
     void createMenus();
-    bool saveFile(int index, const QString &fileName);
     bool confirmQuit();
     void readSettings();
     void writeSettings();
@@ -70,10 +70,6 @@ private:
     QMenu *fileMenu;
     QAction *newFileAction;
     QAction *openFileAction;
-    QAction *saveAction;
-    QAction *saveAsAction;
-    QAction *closeFileAction;
-    QAction *closeAllFilesAction;
     QAction *exitAction;
 
     QMenu *editMenu;
@@ -88,8 +84,6 @@ private:
     QAction *toggleConsoleAction;
     QAction *toggleFullScreenAction;
     QMenu *syntaxMenu;
-    QVarLengthArray<QAction*> syntaxActions;
-    QMenu *indentationMenu;
 
     QMenu *gotoMenu;
     QAction *nextFileStackAction;
@@ -98,9 +92,6 @@ private:
 
     QMenu *prefMenu;
     QMenu *themeMenu;
-    QAction *themeActions[8];
-
-
 };
 
 #endif // MAINWINDOW_H

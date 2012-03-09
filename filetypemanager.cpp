@@ -1,21 +1,22 @@
 #include "filetypemanager.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QVariant>
 
-QVariantMap& FileType::toMap()
+QVariantMap FileType::toMap()
 {
     QVariantMap typeMap;
-    (*typeMap)["name"] = typeName
-    (*typeMap)["mime"] = mimeName
-    (*typeMap)["ext"] = extensions;
+    typeMap["typeName"] = typeName;
+    typeMap["mimeName"] = mimeName;
+    typeMap["extensions"] = extensions;
     return typeMap;
 }
 
 FileTypeManager *FileTypeManager::m_instance = NULL;
 
-FileTypeManager::FileTypeManager()
+FileTypeManager::FileTypeManager(QObject *parent) : QObject(parent)
 {
     loadTypes(); // Load and initialize all available file types
 }
@@ -56,6 +57,12 @@ void FileTypeManager::loadTypes()
         if(type->mimeName == "text/plain")
             m_defaultType = type;
     }
+}
+
+
+QList<FileType*>* FileTypeManager::getTypes()
+{
+    return &m_types;
 }
 
 int FileTypeManager::getTypeCount()

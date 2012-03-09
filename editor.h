@@ -20,24 +20,7 @@ public:
     Editor(QObject *parent = 0);
 
     void openFile(QFile &file);
-    void newFile();
-    void retrieveFile(int index);
-    void saveFile(int index);
-    void closeFile(QVariantMap *filemap = NULL);
-    Q_INVOKABLE void closeFile(int index);
-
-    Q_INVOKABLE int getFileCount();
-    Q_INVOKABLE QVariant getFileAttr(int index , const QString &key);
-    Q_INVOKABLE QVariant getCurrentFileAttr(const QString &key);
-    int getCurrentFileIndex();
-    Q_INVOKABLE void setFileAttr(int index, const QString &key, const QVariant &value);
-    Q_INVOKABLE void setCurrentFileAttr(const QString &key, const QVariant &value);
-
-    void changeCurrent(QVariantMap*);
-    Q_INVOKABLE void changeCurrent(int index);
-    Q_INVOKABLE void switchCurrent(int index);
-    Q_INVOKABLE void setFileModified();
-    Q_INVOKABLE void saveFileContents(int index, QString content);
+    Q_INVOKABLE void newFile();
 
     Q_INVOKABLE bool isSidebarHidden();
     void setSidebarHidden(bool);
@@ -48,6 +31,11 @@ public:
     void hide();
     bool isVisible();
 
+    QAction *saveAction;
+    QAction *saveAsAction;
+    QAction *closeFileAction;
+    QAction *closeAllFilesAction;
+
     QAction *nextFileStackAction;
     QAction *prevFileStackAction;
     QActionGroup *syntaxActions;
@@ -55,49 +43,42 @@ public:
     QList<QObject*> actions;
 
 public slots:
-    int cycleNextFile();
-    int cyclePrevFile();
+    void cycleNextFile();
+    void cyclePrevFile();
 
 private slots:
     void changeSyntaxMode(QAction* syntaxAction);
     void changeTheme(QAction* themeAction);
+    void changeCurrent(bool s = false);
+    bool saveCurrentFile();
+    bool saveCurrentFileAs();
+    void closeFile();
+    bool closeCurrentFile();
+    void closeAllFiles();
+
 
 private:
+    bool saveFile(File* file, QString fileName = QString());
+    bool close(File* file = 0);
     void createActions();
-    void sendMsgJS(QString msg);
-    void switchCurrTab();
-    void loadFileTypes();
-    QAction* createAction( const QString & text, QObject * parent );
+    QAction* createAction( const QString & text, QObject * parent = 0, bool enabled = false);
 
 signals:
     bool hasOpenFile(bool);
     bool hasUndo(bool);
     bool hasRedo(bool);
 
-    void fileOpened(QVariantMap file);
-    void fOpened();
-    void fileSave(int index);
-    void fileSaved(int index);
-    void fileTitleChanged(int index, QVariantMap file);
-    void fileTypeChanged(int index, QVariantMap type);
-    void fileModified();
-    void fileClose(int index);
-    void currentChanged(int index);
-    void jsMsg(QString msg);
+    void fileOpened();
+    void currFileChanged(File*);
 
 private:
-    QVariantMap *currentOpenFile;
-    QVMapList openFiles;
 
-    File *currFile;
-    QList<File*> files;
+    void open(File*);
 
-    QVMapList tabOrder;
-    QVMapList::iterator currentTab;
+    File *m_currFile;
+    QList<File*>::iterator m_currFileIterator;
+    QList<File*> m_files;
 
-    QVMapList fileTypes;
-    QVariantMap *defaultType;
-    QString fileDialogString;
     bool sidebarHidden;
     bool visible;
 };

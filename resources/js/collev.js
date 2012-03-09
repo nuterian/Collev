@@ -31,6 +31,7 @@ $(function(){
 	var openFiles = new Array();
 	var currFile = false;
 	var currTheme = 'default';
+	var currMode = 'text/plain';
 
 	//var per = 90/openFiles.length;
 	var editPad = 10;
@@ -39,37 +40,23 @@ $(function(){
 	var maxTabWidth = 120;
 	var minTabWidth = 30;
 
+	var init = true;
+
 	editor.updateTabs = function(){
-		/*
-		var fullWidth = $editorTabs.width();
-		var availableTabWidth = fullWidth-((leftPad*3) + (openFiles.length*(2*tabMargin)));
-		//if((availableTabWidth - (openFiles.length*maxTabWidth) < 0) ){
-			maxTabWidth = availableTabWidth/openFiles.length;
-		//}
-		*/
 		var per = 100/openFiles.length;
 		for(i=0; i<openFiles.length; i++){
-			/*
-			if(openFiles.length > 1 && i == openFiles.length-1){
-				usedWidth = openFiles[i-1].tab.width()*(openFiles.length-1);
-				fullWidth = $editorTabs.width() - (editPad*2);
-				openFiles[i].tab.width((((fullWidth-usedWidth)/fullWidth)*100)+'%');
-			}
-			else{
-			*/
 				if(openFiles[i])
 					openFiles[i].tab.width(per+'%');
-			//}
 		}
 	}
 
-	editor.setCurrent = function(index){
+	editor.setCurrent = function(){
 		if(currFile){
 			$(currFile.code.getWrapperElement()).removeClass('cm-show');
 			$(currFile.code.getWrapperElement()).addClass('cm-hide');
 			currFile.tab.removeClass('current');
 		}
-		currFile = openFiles[index];
+		currFile = this;
 		currFile.tab.addClass('current');
 		$(currFile.code.getWrapperElement()).removeClass('cm-hide');
 		$(currFile.code.getWrapperElement()).addClass('cm-show');
@@ -87,40 +74,87 @@ $(function(){
       		qEditor.hasRedo(false);
 
 		setTimeout(currFile.code.refresh(), 10);
-		editor.switchCurrMode(currFile.modeName, currFile.mimeType);
+		$("#modeName", $editorStatusbar).html(this.f.mode.typeName);
 
 	}
-	editor.close = function(index){
-
-		openFiles[index].tab.remove();
-		$(openFiles[index].code.getWrapperElement()).remove();
-		openFiles.remove(index);
-		qEditor.closeFile(index);
+	editor.closeFile = function(){
+		this.tab.remove();
+		$(this.code.getWrapperElement()).remove();
+		for(i=0; i<openFiles.length; i++){
+			if(openFiles[i] == this){
+				openFiles.remove(i);
+				break;
+			}
+		}
 		editor.updateTabs();
+		if(openFiles.length == 0){
+			$("#modeName", $editorStatusbar).html('&nbsp;');
+		}
 	}
 
-	var fIndex=0;
-	var fArr = new Array();
+	editor.saveFile = function(index){
+		this.f.content = this.code.getValue();
+	}
+
+	editor.changeMode = function(){
+		this.code.setOption("mode", this.f.type.mimeName);
+	}
+
+	editor.changeName = function(){
+		this.tab.find('.tab-title').html(this.f.name);
+	}
+
+	editor.changeMode = function(){
+		this.code.setOption("mode", this.f.mode.mimeName);
+		if(this == currFile)
+			$("#modeName", $editorStatusbar).html(this.f.mode.typeName);
+	}
+
+	var initCode;
+
+	createCodemirror = function(el, theme, mode, value){
+		code = CodeMirror(editorCode, {
+			  value: value,
+	          lineNumbers: true,
+	          theme: theme,
+	          mode: mode
+	        }); 
+
+		$(code.getScrollerElement()).height('100%');
+        $(code.getScrollerElement()).width('100%');
+        setTimeout(code.refresh(), 10);
+        return code;
+	}
+
+	editor.init = function(){
+		initCode = createCodemirror(editorCode, currTheme, currMode);
+		initCode.setOption("onChange", function(){if(initCode)qEditor.newFile();});
+		initCode.focus();
+	}
+
 	editor.open = function()
 	{
-		console.log(window.file);
-		fArr[fIndex++] = window.file;
-		delete window.file;
-		console.log(fArr);
-	}
-		
-	editor.openFile = function(qFile){
-		console.log(qFile);
 		var file = new Object();
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+qFile.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');	
+		file.f = window.file;
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+file.f.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');
 		$editorTabs.append(file.tab);
+		if(initCode){
+			file.code = initCode;
+			initCode = false;
+			if(!file.f.isNew){
+				file.code.setOption("theme", currTheme);
+				file.code.setOption("mode", file.f.type.mimeName);
+				file.code.setValue(file.f.content);
+			}
+			else{
+				if(file.code.getValue() != '')
+					file.f.isModified = true;
+			}
+		}
+		else
+			file.code = createCodemirror(editorCode, currTheme, file.f.type.mimeName, file.f.content);
 
-		file.code = CodeMirror(editorCode, {
-	          value: qFile.content,
-	          lineNumbers: true,
-	          theme: currTheme,
-	          mode: qFile.mime,
-	          onChange: function(){
+		file.code.setOption("onChange", function(){
 	          	his = file.code.historySize();
 	          	if(his['undo'] == 1)
 	          		qEditor.hasUndo(true);
@@ -132,40 +166,22 @@ $(function(){
 	          	else if(his['redo'] == 0)
 	          		qEditor.hasRedo(false);
 
-	          	qEditor.setFileModified();
-	          }
-	        });
-	    $(file.code.getScrollerElement()).height('100%');
-        $(file.code.getScrollerElement()).width('100%');
+	          	if(!file.f.isModified) file.f.isModified = true;
+	          });
 
-        file.modeName = qFile.mode;
-        file.mimeType = qFile.mime;
-		
-		openFiles[qFile.id] = file;
-		editor.updateTabs();
+        openFiles.push(file);
+        file.f.isCurrent.connect(file,editor.setCurrent);
+        file.f.nameChanged.connect(file, editor.changeName);
+        file.f.modeChanged.connect(file, editor.changeMode);
+        file.f.closed.connect(file, editor.closeFile);
+        file.f.save.connect(file, editor.saveFile);
+        file.tab.click(function(){file.f.isCurrent(true);});
+        file.tab.find('span.ico-close').click(function(){file.f.closing();return false});
+        file.f.isCurrent();
+        editor.updateTabs();
 	}
 
-	editor.getFileContents = function(index){
-		openFiles[index].code.getFileContents();
-	}
-	editor.saveFile = function(index){
-		qEditor.saveFileContents(index, openFiles[index].code.getValue());
-	}
-
-	$("#tabContainer > li").live('click', function(){
-		qEditor.switchCurrent($(this).index());
-	});
-
-	$("#tabContainer > li").find('span.ico-close').live('click', function(){
-		var index = $(this).parent().parent().parent().index();
-		qEditor.fileClose(index);
-		return false;
-	});
-
-
-	$(window).resize(function(){
-	});
-
+	/*
 	editor.switchCurrMode = function(name, mime){
 		if(currFile.code.getOption("mode") != mime){
 			currFile.code.setOption("mode", mime);
@@ -174,17 +190,7 @@ $(function(){
 		}
 		$("#modeName", $editorStatusbar).html(currFile.modeName);
 	}
-
-	editor.changeMode = function(index, typemap){
-		openFiles[index].code.setOption("mode", typemap.mime);
-		openFiles[index].modeName = typemap.name;
-		openFiles[index].mimeType = typemap.mime;
-	}
-
-	editor.updateTitle = function(index, filemap){
-		openFiles[index].tab.find('.tab-title').html(filemap.name);
-		/* Add Mode changing code here */
-	}
+	*/
 
 	editor.undo = function(){
 		currFile.code.undo();
@@ -196,8 +202,13 @@ $(function(){
 
 	editor.changeTheme = function(theme)
 	{
-		for(i=0; i<openFiles.length; i++){
-			openFiles[i].code.setOption('theme', theme);
+		console.log("Chaning Theme...");
+		if(initCode)
+			initCode.setOption('theme', theme);
+		else{
+			for(i=0; i<openFiles.length; i++){
+				openFiles[i].code.setOption('theme', theme);
+			}
 		}
 		currTheme = theme;
 		editorCode.className = ('cm-s-'+theme);
@@ -219,11 +230,6 @@ $(function(){
 	if(qEditor.isSidebarHidden())
 		editor.showSidebar(false);
 
-	qEditor.fileOpened.connect(editor.openFile);
-	qEditor.fOpened.connect(editor.open);
-
-	qEditor.fileSave.connect(editor.saveFile);
-	qEditor.fileTitleChanged.connect(editor.updateTitle);
-	qEditor.fileTypeChanged.connect(editor.changeMode);
-	qEditor.currentChanged.connect(editor.setCurrent);
+	qEditor.fileOpened.connect(editor.open);
+	editor.init();
 });
