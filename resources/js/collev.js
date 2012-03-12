@@ -189,6 +189,7 @@ $(function(){
 				file.code.setOption("theme", currTheme);
 				file.code.setOption("mode", file.f.type.mimeName);
 				file.code.setValue(file.f.content);
+				file.code.clearHistory();
 			}
 			else{
 				if(file.code.getValue() != ''){
@@ -196,8 +197,9 @@ $(function(){
 	          	}
 			}
 		}
-		else
+		else{
 			file.code = createCodemirror(editorCode, currTheme, file.f.type.mimeName, file.f.content);
+		}
 
 		file.undoPos = 0;
 
