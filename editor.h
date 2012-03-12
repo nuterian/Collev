@@ -22,8 +22,6 @@ public:
     void openFile(QFile &file);
     Q_INVOKABLE void newFile();
 
-    Q_INVOKABLE bool isSidebarHidden();
-    void setSidebarHidden(bool);
     bool hasOpenFile();
     bool hasOpenFileAndVisible();
 

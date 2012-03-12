@@ -1,6 +1,9 @@
 #include <QtCore/QUrl>
 #include <QtGui>
 #include <QWebView>
+#include <QUndoStack>
+
+#include <QDebug>
 
 #include "mainwindow.h"
 #include "webapp.h"
@@ -25,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     wApp.loadFile("qrc:/index.html");
     view->setPage(&wApp);
+    wApp.setParent(view);
     setCentralWidget(view);
 
     createActions();
@@ -34,9 +38,33 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
                         " QMenuBar::item:selected {background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6e6e6, stop:1 #cfcfcf);border:1px solid #999;}"
                         " QMenuBar::item:pressed {color:#fff;background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6e6e6e, stop:1 #4e4e4e);border-color:#222;}");
 
+    view->setAcceptDrops(false);
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow(){
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if(event->mimeData()->hasUrls())
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    QList<QUrl> files = event->mimeData()->urls();
+    for(int i=0; i<files.size(); i++){
+        QString fileName = files.at(i).toLocalFile();
+        QFile file(fileName);
+        if(!file.open(QIODevice::ReadOnly)){
+            QMessageBox::critical(this, tr("Error"), tr("Could not open file at path: %1").arg(fileName));
+            return;
+        }
+        qEditor->openFile(file);
+        file.close();
+    }
+    event->acceptProposedAction();
 }
 
 void MainWindow::attachObjects()
@@ -71,7 +99,13 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.endGroup();
 
-    settings.setValue("Editor/showSidebar", toggleSidebarAction->data().toBool());
+    settings.setValue("showSidebar", wApp.isSidebarVisible());
+}
+
+void MainWindow::setSidebarVisible(bool visible)
+{
+    isSidebarVisible = visible;
+    wApp.eval(tr("showSidebar(%1)").arg(isSidebarVisible));
 }
 
 bool MainWindow::confirmQuit()
@@ -108,12 +142,12 @@ void MainWindow::createActions()
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     undoAction = new QAction(tr("&Undo"),this);
-    undoAction->setShortcut(QKeySequence::Undo);
+    //undoAction->setShortcut(QKeySequence::Undo);
     undoAction->setStatusTip(tr("Undo last action."));
     connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
 
     redoAction = new QAction(tr("&Redo"),this);
-    redoAction->setShortcut(QKeySequence::Redo);
+    //redoAction->setShortcut(QKeySequence::Redo);
     redoAction->setStatusTip(tr("Redo last action."));
     connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 
@@ -135,9 +169,8 @@ void MainWindow::createActions()
 
     toggleSidebarAction= new QAction(tr("Hide Sidebar"),this);
     connect(toggleSidebarAction, SIGNAL(triggered()), this, SLOT(toggleSidebar()));
-    bool sidebarShown = settings.value("Editor/showSidebar", true).toBool();
-    qEditor->setSidebarHidden(!sidebarShown);
-    if(!sidebarShown)
+    wApp.setSidebarVisible(settings.value("showSidebar", true).toBool());
+    if(!wApp.isSidebarVisible())
         toggleSidebarAction->setText("Show Sidebar");
 
     toggleConsoleAction= new QAction(tr("Show Console"),this);
@@ -227,12 +260,12 @@ void MainWindow::openFile()
 
 void MainWindow::undo()
 {
-    frame->evaluateJavaScript("editor.undo()");
+    wApp.undo();
 }
 
 void MainWindow::redo()
 {
-    frame->evaluateJavaScript("editor.redo()");
+    wApp.redo();
 }
 
 
@@ -264,12 +297,11 @@ void MainWindow::prevFile()
 
 void MainWindow::toggleSidebar()
 {
-    qEditor->setSidebarHidden(!qEditor->isSidebarHidden());
-    wApp.eval(tr("showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
-    if(qEditor->isSidebarHidden())
-        toggleSidebarAction->setText("Show Sidebar");
+    wApp.setSidebarVisible(!wApp.isSidebarVisible());
+    if(wApp.isSidebarVisible())
+        toggleSidebarAction->setText("Hide Sidebar");
     else
-       toggleSidebarAction->setText("Hide Sidebar");
+       toggleSidebarAction->setText("Show Sidebar");
 }
 
 void MainWindow::toggleConsole()

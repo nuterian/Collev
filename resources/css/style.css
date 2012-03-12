@@ -392,8 +392,33 @@ html{overflow:hidden}
 #editorTabs li .tab-action{
 	overflow:hidden;
 	position:absolute;
-	top:6px;
-	right:8px;
+	top:7px;
+	right:8px;	
+	background-image:url("../img/file_icons.png");
+	background-repeat:no-repeat;
+	width:14px;
+	height:14px;
+	background-position:0 0;
+	display:inline-block;
+	overflow:hidden;
+	vertical-align:top;
+	opacity:0.6;
+}
+
+#editorTabs li.current .tab-action{
+	opacity:0.8;
+}
+
+#editorTabs li.current.modified .tab-action, #editorTabs li.modified .tab-action{
+	background-position:-28px 0;
+}
+
+#editorTabs li.modified .tab-action:hover{
+	background-position:0 0;
+}
+
+#editorTabs li .tab-action:hover{
+	opacity:1;
 }
 
 
@@ -425,18 +450,6 @@ margin: 0;
 padding: 0;	
 overflow:hidden;
 overflow-y:hidden;
-}
-
-.ico-close{
-width:14px;height:14px;
-background:url("../img/close.png") -0px -0px no-repeat;
-display: block;vertical-align: top;overflow: hidden;
-opacity:0.5;
-margin-top:1px;	
-}
-
-.ico-close:hover{
-opacity:1	
 }
 
 

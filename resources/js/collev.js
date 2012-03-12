@@ -2,6 +2,7 @@ var editor = new Object();
 
 var $console;
 var $sidebar;
+var $modeContainer;
 
 log = function(text){
 	$console.append('<div>'+text+'</div>');
@@ -15,7 +16,6 @@ showConsole = function(show){
 }
 
 showSidebar = function(show){
-	var $modeContainer = $("#modeContainer");
 	if(show){
 		$sidebar.show();
 		$modeContainer.css('left','200px');
@@ -37,11 +37,15 @@ $(function(){
 
 	$console = $("#console");
 	$sidebar = $("#sidebar");
+	$modeContainer = $("#modeContainer");
+
+	showSidebar(APP.isSidebarVisible);
+	APP.toggleSidebar.connect(showSidebar);
 
 	var $editorTabs = $("#tabContainer");
 	var $editorBar = $sidebar.find("#editorBar");
 	var $editorOpenFiles = $editorBar.find("#editorOpenFiles > ul");
-	var $editorStatusbar = $("#editorStatusbar");
+	var $editorStatus = $("#editorStatus");
 	var editorCode = document.getElementById("editorCode");
 
 	var openFiles = new Array();
@@ -81,18 +85,14 @@ $(function(){
 		currFile.code.focus();
 
       	var his = currFile.code.historySize();
-      	if(his['undo'] > 0)
-      		qEditor.hasUndo(true);
-      	else
-      		qEditor.hasUndo(false);
+      	if(his['undo'] > 0) qEditor.hasUndo(true);
+      	else qEditor.hasUndo(false);
 
-      	if(his['redo'] > 0)
-      		qEditor.hasRedo(true);
-      	else
-      		qEditor.hasRedo(false);
+      	if(his['redo'] > 0) qEditor.hasRedo(true);
+      	else qEditor.hasRedo(false);
 
 		setTimeout(currFile.code.refresh(), 10);
-		$("#modeName", $editorStatusbar).html(this.f.mode.typeName);
+		$("#modeName", $editorStatus).html(this.f.mode.typeName);
 
 	}
 	editor.closeFile = function(){
@@ -107,12 +107,13 @@ $(function(){
 		}
 		editor.updateTabs();
 		if(openFiles.length == 0){
-			$("#modeName", $editorStatusbar).html('&nbsp;');
+			$("#modeName", $editorStatus).html('&nbsp;');
 		}
 	}
 
 	editor.saveFile = function(index){
 		this.f.content = this.code.getValue();
+		this.undoPos = this.code.historySize().undo;
 	}
 
 	editor.changeMode = function(){
@@ -127,7 +128,7 @@ $(function(){
 	editor.changeMode = function(){
 		this.code.setOption("mode", this.f.mode.mimeName);
 		if(this == currFile)
-			$("#modeName", $editorStatusbar).html(this.f.mode.typeName);
+			$("#modeName", $editorStatus).html(this.f.mode.typeName);
 	}
 
 	var initCode;
@@ -152,11 +153,32 @@ $(function(){
 		initCode.focus();
 	}
 
+	editor.setModified = function(modified){
+		if(modified){
+	        this.tab.addClass('modified');
+	        this.side.addClass('modified');	
+		}
+		else{
+			this.tab.removeClass('modified');
+	        this.side.removeClass('modified');
+		}
+	}
+
 	editor.open = function()
 	{
 		var file = new Object();
 		file.f = window.file;
-		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+file.f.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');
+
+		// Connect all Signals
+		file.f.isCurrent.connect(file,editor.setCurrent);
+        file.f.wasModified.connect(file,editor.setModified);
+        file.f.nameChanged.connect(file, editor.changeName);
+        file.f.modeChanged.connect(file, editor.changeMode);
+        file.f.closed.connect(file, editor.closeFile);
+        file.f.save.connect(file, editor.saveFile);
+
+
+		file.tab = $('<li class="current"><div class="tab"><span class="tab-title">'+file.f.name+'</span><span class="tab-action"></span></div></li>');
 		file.side = $('<li class="current"><span class="side-action"></span><span class="side-name">'+file.f.name+'</span></li>');
 		$editorTabs.append(file.tab);
 		$editorOpenFiles.append(file.side);
@@ -169,51 +191,43 @@ $(function(){
 				file.code.setValue(file.f.content);
 			}
 			else{
-				if(file.code.getValue() != '')
-					file.f.isModified = true;
+				if(file.code.getValue() != ''){
+	          		file.f.isModified = true;
+	          	}
 			}
 		}
 		else
 			file.code = createCodemirror(editorCode, currTheme, file.f.type.mimeName, file.f.content);
 
+		file.undoPos = 0;
+
 		file.code.setOption("onChange", function(){
 	          	his = file.code.historySize();
-	          	if(his['undo'] == 1)
+	          	console.log('Change! : '+his['undo']+' => '+file.undoPos);
+	          	if(his['undo'] == (file.undoPos+1) || his['undo'] == (file.undoPos-1)){
 	          		qEditor.hasUndo(true);
-	          	else if(his['undo'] == 0)
+	          		file.f.isModified = true;
+	          	}
+	          	else if(his['undo'] == file.undoPos){
 	          		qEditor.hasUndo(false);
-
+	          		file.f.isModified = false;
+	          	}
+	          		
 	          	if(his['redo'] == 1)
 	          		qEditor.hasRedo(true);
 	          	else if(his['redo'] == 0)
 	          		qEditor.hasRedo(false);
-
-	          	if(!file.f.isModified) file.f.isModified = true;
 	          });
 
         openFiles.push(file);
-        file.f.isCurrent.connect(file,editor.setCurrent);
-        file.f.nameChanged.connect(file, editor.changeName);
-        file.f.modeChanged.connect(file, editor.changeMode);
-        file.f.closed.connect(file, editor.closeFile);
-        file.f.save.connect(file, editor.saveFile);
+
         file.tab.click(function(){file.f.isCurrent(true);});
-        file.tab.find('span.ico-close').click(function(){file.f.closing();return false});
+        file.side.click(function(){file.f.isCurrent(true);});
+        file.tab.find('span.tab-action').click(function(){file.f.closing();return false});
         file.side.find('span.side-action').click(function(){file.f.closing();return false});
         file.f.isCurrent();
         editor.updateTabs();
 	}
-
-	/*
-	editor.switchCurrMode = function(name, mime){
-		if(currFile.code.getOption("mode") != mime){
-			currFile.code.setOption("mode", mime);
-			currFile.modeName = name;
-			currFile.mimeType = mime;
-		}
-		$("#modeName", $editorStatusbar).html(currFile.modeName);
-	}
-	*/
 
 	editor.undo = function(){
 		currFile.code.undo();
@@ -236,9 +250,6 @@ $(function(){
 		currTheme = theme;
 		editorCode.className = ('cm-s-'+theme);
 	}
-
-	if(qEditor.isSidebarHidden())
-		showSidebar(false);
 
 	qEditor.fileOpened.connect(editor.open);
 	editor.init();

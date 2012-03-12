@@ -9,6 +9,9 @@
 class WebApp : public QWebPage
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool isSidebarVisible READ isSidebarVisible WRITE setSidebarVisible NOTIFY toggleSidebar)
+
 public:
     static WebApp& getInstance()
     {
@@ -20,15 +23,28 @@ public:
     QVariant eval(const QString &scriptSource);
     void addObject(const QString &name, QObject *object);
 
+    bool isSidebarVisible();
+    void setSidebarVisible(bool);
+
+    void undo();
+    void redo();
+
+signals:
+    void toggleSidebar(bool);
+
 public slots:
     void log(const QString&);
 protected:
     WebApp(QObject *parent = 0);
     static WebApp *m_instance;
     
-signals:
-    
-public slots:
+private slots:
+    void attachObject();
+    void undoChanged(bool);
+
+private:
+    bool m_isSidebarVisible;
+    QUndoStack *m_undoStack;
     
 };
 

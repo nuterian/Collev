@@ -51,6 +51,8 @@ private slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 
 private:
     void createActions();
@@ -58,6 +60,8 @@ private:
     bool confirmQuit();
     void readSettings();
     void writeSettings();
+
+    void setSidebarVisible(bool);
 
 
 private:
@@ -95,6 +99,8 @@ private:
 
     QMenu *prefMenu;
     QMenu *themeMenu;
+
+    bool isSidebarVisible;
 };
 
 #endif // MAINWINDOW_H

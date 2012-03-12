@@ -91,11 +91,8 @@ bool File::isModified()
 
 void File::setModified(bool modified)
 {
-    qDebug()<<"Setting Modified... "<<modified;
-
     if(m_modified != modified){
         m_modified = modified;
-        qDebug()<<"Emitting Signal... "<<modified;
         emit wasModified(m_modified);
     }
 }
@@ -128,6 +125,7 @@ void File::setMode(FileType *mode)
     else{
         if(m_mode != mode){
             m_mode = mode;
+            if(!mode->action->isChecked()) mode->action->setChecked(true);
             emit modeChanged();
         }
     }

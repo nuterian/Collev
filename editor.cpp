@@ -49,6 +49,7 @@ void Editor::createActions()
     for(int i=0; i<fileTypes->size(); i++){
         FileType *type = fileTypes->at(i);
         QAction *a = createAction(type->typeName, syntaxActions);
+        type->action = a;
         a->setData(type->mimeName);
         if(type == FileTypes.getDefaultType())
             a->setChecked(true);
@@ -168,6 +169,7 @@ void Editor::changeCurrent(bool s)
             m_files.push_front(m_currFile);
             m_currFileIterator = m_files.begin();
         }
+        m_currFile->getMode()->action->setChecked(true);
     }
     emit currFileChanged(m_currFile);
 }
@@ -307,13 +309,4 @@ bool Editor::hasOpenFileAndVisible()
     return (hasOpenFile() && visible);
 }
 
-bool Editor::isSidebarHidden()
-{
-    return sidebarHidden;
-}
-
-void Editor::setSidebarHidden(bool ok)
-{
-    sidebarHidden = ok;
-}
 

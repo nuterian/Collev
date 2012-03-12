@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QVariant>
+#include <QAction>
 
 #define FileTypes FileTypeManager::getInstance()
 
@@ -14,6 +15,8 @@ struct FileType
     QString typeName;
     QString mimeName;
     QStringList extensions;
+
+    QAction *action;
 
     QVariantMap toMap();
 };
