@@ -4,6 +4,8 @@
 #include <QtGui/QMainWindow>
 #include <QVarLengthArray>
 
+#include "client.h"
+
 class QAction;
 class QMenu;
 class QWebView;
@@ -61,6 +63,7 @@ private:
 private:
 
     Editor *qEditor;
+    Client client;
 
     QWebView *view;
     QWebFrame *frame;

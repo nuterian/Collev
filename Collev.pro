@@ -1,10 +1,4 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2012-01-12T18:32:29
-#
-#-------------------------------------------------
-
-QT       += core gui webkit
+QT       += core gui webkit network
 
 TARGET = Collev
 TEMPLATE = app
@@ -15,13 +9,15 @@ SOURCES += main.cpp\
     editor.cpp \
     webapp.cpp \
     file.cpp \
-    filetypemanager.cpp
+    filetypemanager.cpp \
+    client.cpp
 
 HEADERS  += mainwindow.h \
     editor.h \
     webapp.h \
     file.h \
-    filetypemanager.h
+    filetypemanager.h \
+    client.h
 
 RESOURCES += \
     resources/collev.qrc
