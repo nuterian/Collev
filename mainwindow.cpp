@@ -265,7 +265,7 @@ void MainWindow::prevFile()
 void MainWindow::toggleSidebar()
 {
     qEditor->setSidebarHidden(!qEditor->isSidebarHidden());
-    wApp.eval(tr("editor.showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
+    wApp.eval(tr("showSidebar(%1)").arg(!qEditor->isSidebarHidden()));
     if(qEditor->isSidebarHidden())
         toggleSidebarAction->setText("Show Sidebar");
     else

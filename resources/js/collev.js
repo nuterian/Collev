@@ -1,6 +1,7 @@
 var editor = new Object();
 
 var $console;
+var $sidebar;
 
 log = function(text){
 	$console.append('<div>'+text+'</div>');
@@ -13,6 +14,18 @@ showConsole = function(show){
 		$console.hide();
 }
 
+showSidebar = function(show){
+	var $modeContainer = $("#modeContainer");
+	if(show){
+		$sidebar.show();
+		$modeContainer.css('left','200px');
+	}
+	else{
+		$sidebar.hide();
+		$modeContainer.css('left','0');
+	}
+}
+
 // Array Remove - By John Resig
 Array.prototype.remove = function(from, to) {
   var rest = this.slice((to || from) + 1 || this.length);
@@ -23,8 +36,11 @@ Array.prototype.remove = function(from, to) {
 $(function(){
 
 	$console = $("#console");
+	$sidebar = $("#sidebar");
 
 	var $editorTabs = $("#tabContainer");
+	var $editorBar = $sidebar.find("#editorBar");
+	var $editorOpenFiles = $editorBar.find("#editorOpenFiles > ul");
 	var $editorStatusbar = $("#editorStatusbar");
 	var editorCode = document.getElementById("editorCode");
 
@@ -55,9 +71,11 @@ $(function(){
 			$(currFile.code.getWrapperElement()).removeClass('cm-show');
 			$(currFile.code.getWrapperElement()).addClass('cm-hide');
 			currFile.tab.removeClass('current');
+			currFile.side.removeClass('current');
 		}
 		currFile = this;
 		currFile.tab.addClass('current');
+		currFile.side.addClass('current');
 		$(currFile.code.getWrapperElement()).removeClass('cm-hide');
 		$(currFile.code.getWrapperElement()).addClass('cm-show');
 		currFile.code.focus();
@@ -79,6 +97,7 @@ $(function(){
 	}
 	editor.closeFile = function(){
 		this.tab.remove();
+		this.side.remove();
 		$(this.code.getWrapperElement()).remove();
 		for(i=0; i<openFiles.length; i++){
 			if(openFiles[i] == this){
@@ -102,6 +121,7 @@ $(function(){
 
 	editor.changeName = function(){
 		this.tab.find('.tab-title').html(this.f.name);
+		this.side.find('.side-name').html(this.f.name);
 	}
 
 	editor.changeMode = function(){
@@ -137,7 +157,9 @@ $(function(){
 		var file = new Object();
 		file.f = window.file;
 		file.tab = $('<li class="current"><div class="tab"><span class="tab-title left">'+file.f.name+'</span><span class="tab-action right"><span class="ico-close"></span></span></div></li>');
+		file.side = $('<li class="current"><span class="side-action"></span><span class="side-name">'+file.f.name+'</span></li>');
 		$editorTabs.append(file.tab);
+		$editorOpenFiles.append(file.side);
 		if(initCode){
 			file.code = initCode;
 			initCode = false;
@@ -177,6 +199,7 @@ $(function(){
         file.f.save.connect(file, editor.saveFile);
         file.tab.click(function(){file.f.isCurrent(true);});
         file.tab.find('span.ico-close').click(function(){file.f.closing();return false});
+        file.side.find('span.side-action').click(function(){file.f.closing();return false});
         file.f.isCurrent();
         editor.updateTabs();
 	}
@@ -214,21 +237,8 @@ $(function(){
 		editorCode.className = ('cm-s-'+theme);
 	}
 
-	editor.showSidebar = function(show){
-		var $sidebar = $("#editorSidebar");
-		var $codeContainer = $("#editorCodeContainer");
-		if(show){
-			$sidebar.show();
-			$codeContainer.css('left','200px');
-		}
-		else{
-			$sidebar.hide();
-			$codeContainer.css('left','0');
-		}
-	}
-
 	if(qEditor.isSidebarHidden())
-		editor.showSidebar(false);
+		showSidebar(false);
 
 	qEditor.fileOpened.connect(editor.open);
 	editor.init();

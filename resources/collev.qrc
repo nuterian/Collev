@@ -36,5 +36,6 @@
         <file>js/codemirror/mode/ruby.js</file>
         <file>js/codemirror/mode/xml.js</file>
         <file>js/codemirror/mode/yaml.js</file>
+        <file>img/file_icons.png</file>
     </qresource>
 </RCC>

@@ -63,17 +63,34 @@
                 <div>Initializing collev...</div>
                 <div>Starting up editor....</div>
             </div>
-            <div id="editor">
-                <div id="editorSidebar"></div>
-                <div id="editorCodeContainer">
-                    <div id="editorTabs">
-                        <div id="tabContainer"></div>      
+            <div id="sidebar">
+                <div id="editorBar">
+                    <div id="editorOpenFiles" class="sidebar-section">
+                        <h2>Open Files</h2>
+                        <ul>
+                            <!--
+                            <li class="modified"><span class="action"></span><span>hello.txt<span></li>
+                            <li><span class="action"></span><span>a.cpp</span></li>
+                            <li class="current"><span class="action"></span><span>client.h</span></li>
+                        -->
+                        </ul>
                     </div>
-                    <div id="editorCode"></div>
                 </div>
-                <div id="editorStatusbar">
+            </div>
+            
+            <div id="modeContainer">
+                <div id="editor">
+                    <div id="editorCodeContainer">
+                        <div id="editorTabs">
+                            <div id="tabContainer"></div>      
+                        </div>
+                        <div id="editorCode"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statusbar">
                     <div id="modeName">Plain Text</div>
-                </div>
             </div>
         </div>
     </body>
