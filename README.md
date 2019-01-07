@@ -1,7 +1,7 @@
 Collev
 ======
 
-A Simple IDE and Collaboration tool created using Web Technologies on a native client layer. 
+A simple IDE and collaboration tool built using QtWebKit for UI and websockets for networking.
 
 The current build includes the following features:
 - Syntax Highlighting for over 15 languages.
